@@ -6,84 +6,385 @@
   <title>Scratch Rewards - Admin</title>
   <style>
     * { box-sizing: border-box; }
-    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-    h1 { margin-top: 0; }
-    .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .card h2 { margin-top: 0; font-size: 1.1rem; color: #333; }
-    label { display: block; margin-top: 10px; font-weight: 500; color: #555; }
-    input[type="text"], input[type="password"], input[type="color"], input[type="number"] { width: 100%; max-width: 400px; padding: 8px 12px; margin-top: 4px; border: 1px solid #ddd; border-radius: 8px; }
-    input[type="color"] { height: 40px; cursor: pointer; }
-    button { padding: 10px 20px; background: #D4A853; color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; }
-    button:hover { background: #B8923F; color: #fff; }
-    .login-box { max-width: 400px; margin: 40px auto; }
-    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
-    .row > div { flex: 1; min-width: 180px; }
-    .msg { padding: 10px; border-radius: 8px; margin-top: 10px; }
-    .msg.ok { background: #d4edda; color: #155724; }
-    .msg.err { background: #f8d7da; color: #721c24; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
-    th { background: #f8f9fa; font-weight: 600; }
-    .small { font-size: 0.9rem; color: #666; }
-    .color-preview { width: 24px; height: 24px; border-radius: 4px; display: inline-block; vertical-align: middle; margin-left: 8px; border: 1px solid #ddd; }
+    :root {
+      --primary: #D4A853;
+      --primary-dark: #B8923F;
+      --bg: #070B11;
+      --bg-soft: #0E1622;
+      --card-bg: #111827;
+      --border-subtle: rgba(148, 163, 184, 0.35);
+      --text-main: #E5E7EB;
+      --text-muted: #9CA3AF;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --success-bg: #ECFDF3;
+      --success-text: #166534;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 55%),
+        radial-gradient(circle at top right, rgba(96, 165, 250, 0.18), transparent 55%),
+        radial-gradient(circle at bottom, rgba(248, 113, 113, 0.14), transparent 55%),
+        var(--bg);
+    }
+    h1, h2, h3 { margin: 0; }
+
+    /* Top bar */
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 20px 16px 32px;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(17, 24, 39, 0.95));
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.55);
+      margin-bottom: 20px;
+    }
+    .topbar-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 30% 20%, #ffffff, rgba(255,255,255,0) 55%), linear-gradient(135deg, var(--primary), var(--primary-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #111827;
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+    }
+    .topbar h1 {
+      font-size: 1.1rem;
+      letter-spacing: 0.02em;
+    }
+    .topbar span.badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      color: var(--text-muted);
+      gap: 6px;
+    }
+
+    /* Layout */
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2.2fr);
+      gap: 20px;
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    .card {
+      background: linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.98));
+      border-radius: 16px;
+      padding: 18px 18px 16px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 18px 40px rgba(15,23,42,0.7);
+      margin-bottom: 18px;
+    }
+    .card h2 {
+      margin: 0 0 4px;
+      font-size: 0.98rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="color"],
+    input[type="number"] {
+      width: 100%;
+      max-width: 420px;
+      padding: 9px 11px;
+      margin-top: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    input[type="number"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.6);
+      background: #020617;
+    }
+    input[type="password"] {
+      letter-spacing: 0.06em;
+    }
+    input[type="color"] {
+      height: 40px;
+      cursor: pointer;
+      padding: 0;
+      border-radius: 999px;
+      border-width: 2px;
+      max-width: 80px;
+      background: transparent;
+    }
+
+    button {
+      padding: 9px 18px;
+      background: linear-gradient(135deg, var(--primary), #facc15);
+      color: #111827;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.86rem;
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+      box-shadow: 0 18px 36px rgba(0,0,0,0.6);
+    }
+    button.secondary {
+      background: rgba(15,23,42,0.95);
+      color: var(--text-main);
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      box-shadow: none;
+    }
+
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+      background: radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 60%), rgba(15,23,42,0.98);
+      border-radius: 18px;
+      padding: 28px 24px 22px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      box-shadow: 0 22px 45px rgba(15, 23, 42, 0.75);
+    }
+    .login-box h1 {
+      font-size: 1.3rem;
+      margin-bottom: 6px;
+    }
+    .login-subtitle {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .row > div {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .msg {
+      padding: 9px 11px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 0.8rem;
+    }
+    .msg.ok {
+      background: var(--success-bg);
+      color: var(--success-text);
+    }
+    .msg.err {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      margin-top: 6px;
+    }
+    th, td {
+      padding: 9px 8px;
+      text-align: left;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.85);
+    }
+    th {
+      background: rgba(15,23,42,0.95);
+      color: var(--text-muted);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .small { font-size: 0.86rem; color: var(--text-muted); }
+    .color-preview {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      box-shadow: inset 0 0 0 1px rgba(15,23,42,0.5);
+    }
+    .pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.6);
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
-  <div id="loginScreen" class="card login-box">
-    <h1>Admin Login</h1>
-    <label>Password</label>
-    <input type="password" id="adminPassword" placeholder="Default: admin123" />
-    <button type="button" onclick="doLogin()">Login</button>
-    <p id="loginErr" class="msg err" style="display:none;"></p>
+  <div id="loginScreen" class="login-wrapper">
+    <div class="login-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="topbar-logo">S</div>
+          <div>
+            <h1>Admin Console</h1>
+            <div class="login-subtitle">Secure access to Scratch Rewards configuration</div>
+          </div>
+        </div>
+        <span class="pill">Protected</span>
+      </div>
+      <label>Password</label>
+      <input type="password" id="adminPassword" placeholder="Enter admin password" />
+      <button type="button" onclick="doLogin()">Login</button>
+      <p id="loginErr" class="msg err" style="display:none;"></p>
+    </div>
   </div>
 
   <div id="adminPanel" style="display:none;">
-    <h1>Scratch Rewards – Full Control</h1>
-    <p class="small">Colors, logo, text aur feature cards yahan se change karo. Save karne par app config API se yehi values aayengi.</p>
+    <div class="shell">
+      <div class="topbar">
+        <div class="topbar-title">
+          <div class="topbar-logo">S</div>
+          <div>
+            <h1>Scratch Rewards · Admin</h1>
+            <div class="small">Live configuration for mobile app — theme, content & feature cards</div>
+          </div>
+        </div>
+        <span class="badge">
+          <span style="width:8px;height:8px;border-radius:999px;background:#22C55E;box-shadow:0 0 0 4px rgba(34,197,94,0.28);"></span>
+          Connected
+        </span>
+      </div>
 
-    <div class="card">
-      <h2>Theme / Colors</h2>
-      <div class="row">
+      <div class="layout">
+        <div>
+          <div class="card">
+            <div class="section-label">Theme</div>
+            <h2>Colors</h2>
+            <p class="card-subtitle">Instantly update primary palette for the mobile app UI.</p>
+            <div class="row">
         <div><label>Primary <span class="color-preview" id="prevPrimary"></span></label><input type="color" id="theme.primary" value="#D4A853" /></div>
         <div><label>Primary Dark <span class="color-preview" id="prevPrimaryDark"></span></label><input type="color" id="theme.primaryDark" value="#B8923F" /></div>
         <div><label>Accent <span class="color-preview" id="prevAccent"></span></label><input type="color" id="theme.accent" value="#D4A853" /></div>
         <div><label>Background <span class="color-preview" id="prevBackground"></span></label><input type="color" id="theme.background" value="#F5F5F5" /></div>
         <div><label>Surface <span class="color-preview" id="prevSurface"></span></label><input type="color" id="theme.surface" value="#FFFFFF" /></div>
         <div><label>Success <span class="color-preview" id="prevSuccess"></span></label><input type="color" id="theme.success" value="#34C759" /></div>
+            </div>
+            <button onclick="saveConfig()">Save Colors</button>
+            <span id="colorMsg"></span>
+          </div>
+
+          <div class="card">
+            <div class="section-label">Brand</div>
+            <h2>Logo</h2>
+            <p class="card-subtitle">Update the logo used across the mobile experience.</p>
+            <label>Logo URL (ya upload karo)</label>
+            <div class="row">
+              <input type="text" id="logoUrl" placeholder="https://... ya /api/uploads/filename" style="flex:1;" />
+              <button type="button" class="secondary" onclick="document.getElementById('logoFile').click()">Upload</button>
+              <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="uploadLogo(this)" />
+            </div>
+            <button onclick="saveLogoUrl()">Save Logo URL</button>
+            <span id="logoMsg"></span>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="section-label">Content</div>
+            <h2>App Text (Strings)</h2>
+            <p class="card-subtitle">Update all user-facing labels like app name, buttons and sections.</p>
+            <div id="stringsList"></div>
+            <button onclick="saveStrings()">Save All Text</button>
+            <span id="stringsMsg"></span>
+          </div>
+
+          <div class="card">
+            <div class="section-label">Home</div>
+            <h2>Feature Cards</h2>
+            <p class="card-subtitle">Control the promotional cards on the home screen (title, description, AD badge & target screen).</p>
+            <table>
+              <thead><tr><th>#</th><th>Title</th><th>Description</th><th>Gradient</th><th>AD</th><th>Link</th><th></th></tr></thead>
+              <tbody id="cardsTable"></tbody>
+            </table>
+            <button onclick="addCard()">+ Add Card</button>
+            <span id="cardsMsg"></span>
+          </div>
+        </div>
       </div>
-      <button onclick="saveConfig()">Save Colors</button>
-      <span id="colorMsg"></span>
-    </div>
-
-    <div class="card">
-      <h2>Logo</h2>
-      <label>Logo URL (ya upload karo)</label>
-      <div class="row">
-        <input type="text" id="logoUrl" placeholder="https://... ya /api/uploads/filename" style="flex:1;" />
-        <button type="button" onclick="document.getElementById('logoFile').click()">Upload</button>
-        <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="uploadLogo(this)" />
-      </div>
-      <button onclick="saveLogoUrl()">Save Logo URL</button>
-      <span id="logoMsg"></span>
-    </div>
-
-    <div class="card">
-      <h2>App Text (Strings)</h2>
-      <p class="small">In keys ko app me strings ke liye use kiya ja sakta hai (e.g. app_name = app title).</p>
-      <div id="stringsList"></div>
-      <button onclick="saveStrings()">Save All Text</button>
-      <span id="stringsMsg"></span>
-    </div>
-
-    <div class="card">
-      <h2>Feature Cards (Home)</h2>
-      <p class="small">Title, description, gradient (1-5), AD badge, link (scratch / rewards / url).</p>
-      <table>
-        <thead><tr><th>#</th><th>Title</th><th>Description</th><th>Gradient</th><th>AD</th><th>Link</th><th></th></tr></thead>
-        <tbody id="cardsTable"></tbody>
-      </table>
-      <button onclick="addCard()">+ Add Card</button>
-      <span id="cardsMsg"></span>
     </div>
   </div>
 
