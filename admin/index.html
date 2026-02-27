@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scratch Rewards - Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+    h1 { margin-top: 0; }
+    .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .card h2 { margin-top: 0; font-size: 1.1rem; color: #333; }
+    label { display: block; margin-top: 10px; font-weight: 500; color: #555; }
+    input[type="text"], input[type="password"], input[type="color"], input[type="number"] { width: 100%; max-width: 400px; padding: 8px 12px; margin-top: 4px; border: 1px solid #ddd; border-radius: 8px; }
+    input[type="color"] { height: 40px; cursor: pointer; }
+    button { padding: 10px 20px; background: #D4A853; color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+    button:hover { background: #B8923F; color: #fff; }
+    .login-box { max-width: 400px; margin: 40px auto; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+    .row > div { flex: 1; min-width: 180px; }
+    .msg { padding: 10px; border-radius: 8px; margin-top: 10px; }
+    .msg.ok { background: #d4edda; color: #155724; }
+    .msg.err { background: #f8d7da; color: #721c24; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f8f9fa; font-weight: 600; }
+    .small { font-size: 0.9rem; color: #666; }
+    .color-preview { width: 24px; height: 24px; border-radius: 4px; display: inline-block; vertical-align: middle; margin-left: 8px; border: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <div id="loginScreen" class="card login-box">
+    <h1>Admin Login</h1>
+    <label>Password</label>
+    <input type="password" id="adminPassword" placeholder="Default: admin123" />
+    <button type="button" onclick="doLogin()">Login</button>
+    <p id="loginErr" class="msg err" style="display:none;"></p>
+  </div>
+
+  <div id="adminPanel" style="display:none;">
+    <h1>Scratch Rewards – Full Control</h1>
+    <p class="small">Colors, logo, text aur feature cards yahan se change karo. Save karne par app config API se yehi values aayengi.</p>
+
+    <div class="card">
+      <h2>Theme / Colors</h2>
+      <div class="row">
+        <div><label>Primary <span class="color-preview" id="prevPrimary"></span></label><input type="color" id="theme.primary" value="#D4A853" /></div>
+        <div><label>Primary Dark <span class="color-preview" id="prevPrimaryDark"></span></label><input type="color" id="theme.primaryDark" value="#B8923F" /></div>
+        <div><label>Accent <span class="color-preview" id="prevAccent"></span></label><input type="color" id="theme.accent" value="#D4A853" /></div>
+        <div><label>Background <span class="color-preview" id="prevBackground"></span></label><input type="color" id="theme.background" value="#F5F5F5" /></div>
+        <div><label>Surface <span class="color-preview" id="prevSurface"></span></label><input type="color" id="theme.surface" value="#FFFFFF" /></div>
+        <div><label>Success <span class="color-preview" id="prevSuccess"></span></label><input type="color" id="theme.success" value="#34C759" /></div>
+      </div>
+      <button onclick="saveConfig()">Save Colors</button>
+      <span id="colorMsg"></span>
+    </div>
+
+    <div class="card">
+      <h2>Logo</h2>
+      <label>Logo URL (ya upload karo)</label>
+      <div class="row">
+        <input type="text" id="logoUrl" placeholder="https://... ya /api/uploads/filename" style="flex:1;" />
+        <button type="button" onclick="document.getElementById('logoFile').click()">Upload</button>
+        <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="uploadLogo(this)" />
+      </div>
+      <button onclick="saveLogoUrl()">Save Logo URL</button>
+      <span id="logoMsg"></span>
+    </div>
+
+    <div class="card">
+      <h2>App Text (Strings)</h2>
+      <p class="small">In keys ko app me strings ke liye use kiya ja sakta hai (e.g. app_name = app title).</p>
+      <div id="stringsList"></div>
+      <button onclick="saveStrings()">Save All Text</button>
+      <span id="stringsMsg"></span>
+    </div>
+
+    <div class="card">
+      <h2>Feature Cards (Home)</h2>
+      <p class="small">Title, description, gradient (1-5), AD badge, link (scratch / rewards / url).</p>
+      <table>
+        <thead><tr><th>#</th><th>Title</th><th>Description</th><th>Gradient</th><th>AD</th><th>Link</th><th></th></tr></thead>
+        <tbody id="cardsTable"></tbody>
+      </table>
+      <button onclick="addCard()">+ Add Card</button>
+      <span id="cardsMsg"></span>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api';
+    const ADMIN = '/admin/api';
+    let token = '';
+
+    function getToken() {
+      token = sessionStorage.getItem('adminToken') || '';
+      return token;
+    }
+    function setToken(t) {
+      token = t;
+      sessionStorage.setItem('adminToken', t);
+    }
+
+    function doLogin() {
+      const pwd = document.getElementById('adminPassword').value;
+      const errEl = document.getElementById('loginErr');
+      if (!pwd) { errEl.textContent = 'Password daalo'; errEl.style.display = 'block'; return; }
+      setToken(pwd);
+      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'block'; loadAll(); } else throw new Error('Wrong password'); })
+        .catch(e => { errEl.textContent = e.message || 'Login failed'; errEl.style.display = 'block'; });
+    }
+
+    if (getToken()) {
+      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'block'; loadAll(); } else setToken(''); });
+    }
+
+    function loadAll() {
+      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(data => {
+          Object.entries(data).forEach(([k, v]) => {
+            const el = document.getElementById(k);
+            if (el && (el.type === 'color' || el.type === 'text')) el.value = v || el.value;
+          });
+          updateColorPreviews();
+          const strKeys = Object.keys(data).filter(x => x.startsWith('strings.'));
+          let html = '';
+          strKeys.forEach(key => {
+            const short = key.replace('strings.', '');
+            html += '<div class="row"><div><label>' + short + '</label><input type="text" id="' + key + '" value="' + (data[key] || '').replace(/"/g, '&quot;') + '" /></div></div>';
+          });
+          if (!strKeys.length) {
+            ['app_name','phone','login','home','wallet','profile','leaderboard','store','send_otp','watch_ad','scratch_card','tap_to_scratch','copy_link','claim'].forEach(k => {
+              html += '<div class="row"><div><label>strings.' + k + '</label><input type="text" id="strings.' + k + '" value="" /></div></div>';
+            });
+          }
+          document.getElementById('stringsList').innerHTML = html || '<p>No strings in config. Add keys like strings.app_name</p>';
+        });
+
+      fetch(ADMIN + '/feature-cards', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(cards => {
+          const tbody = document.getElementById('cardsTable');
+          tbody.innerHTML = cards.map(c => `
+            <tr data-id="${c.id}">
+              <td>${c.sort_order}</td>
+              <td><input type="text" data-field="title" value="${(c.title||'').replace(/"/g,'&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #ddd;padding:4px;" /></td>
+              <td><input type="text" data-field="description" value="${(c.description||'').replace(/"/g,'&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #ddd;padding:4px;" /></td>
+              <td><input type="number" data-field="gradientId" min="1" max="5" value="${c.gradient_id}" onchange="saveCardRow(${c.id})" style="width:50px;" /></td>
+              <td><input type="checkbox" data-field="showAd" ${c.show_ad ? 'checked' : ''} onchange="saveCardRow(${c.id})" /></td>
+              <td><input type="text" data-field="linkType" value="${(c.link_type||'').replace(/"/g,'&quot;')}" onchange="saveCardRow(${c.id})" placeholder="scratch|rewards" style="width:80px;" /></td>
+              <td><button onclick="deleteCard(${c.id})">Delete</button></td>
+            </tr>
+          `).join('');
+        });
+    }
+
+    function updateColorPreviews() {
+      ['primary','primaryDark','accent','background','surface','success'].forEach(name => {
+        const el = document.getElementById('theme.' + name);
+        if (el) document.getElementById('prev' + name.charAt(0).toUpperCase() + name.slice(1)).style.background = el.value;
+      });
+    }
+    document.addEventListener('input', e => { if (e.target.id && e.target.id.startsWith('theme.')) updateColorPreviews(); });
+
+    function saveConfig() {
+      const payload = {};
+      ['theme.primary','theme.primaryDark','theme.accent','theme.background','theme.surface','theme.success'].forEach(k => {
+        const el = document.getElementById(k);
+        if (el) payload[k] = el.value;
+      });
+      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
+        .then(r => r.json()).then(() => { document.getElementById('colorMsg').textContent = ' Saved.'; document.getElementById('colorMsg').className = 'msg ok'; })
+        .catch(() => { document.getElementById('colorMsg').textContent = ' Error'; document.getElementById('colorMsg').className = 'msg err'; });
+    }
+
+    function saveLogoUrl() {
+      const url = document.getElementById('logoUrl').value.trim();
+      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'logo.url': url }) })
+        .then(r => r.json()).then(() => { document.getElementById('logoMsg').textContent = ' Saved.'; document.getElementById('logoMsg').className = 'msg ok'; });
+    }
+
+    function uploadLogo(input) {
+      if (!input.files.length) return;
+      const fd = new FormData();
+      fd.append('logo', input.files[0]);
+      fetch(ADMIN + '/logo', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd })
+        .then(r => r.json())
+        .then(data => { document.getElementById('logoUrl').value = data.url || ''; document.getElementById('logoMsg').textContent = ' Uploaded. Save URL if needed.'; document.getElementById('logoMsg').className = 'msg ok'; })
+        .catch(() => { document.getElementById('logoMsg').textContent = ' Upload failed'; document.getElementById('logoMsg').className = 'msg err'; });
+    }
+
+    function saveStrings() {
+      const payload = {};
+      document.querySelectorAll('#stringsList input[id^="strings."]').forEach(el => { payload[el.id] = el.value; });
+      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
+        .then(r => r.json()).then(() => { document.getElementById('stringsMsg').textContent = ' Saved.'; document.getElementById('stringsMsg').className = 'msg ok'; });
+    }
+
+    function saveCardRow(id) {
+      const row = document.querySelector('tr[data-id="' + id + '"]');
+      if (!row) return;
+      const get = (f) => {
+        const el = row.querySelector('[data-field="' + f + '"]');
+        if (!el) return null;
+        if (el.type === 'checkbox') return el.checked;
+        return el.value;
+      };
+      fetch(ADMIN + '/feature-cards/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({
+          title: get('title'),
+          description: get('description'),
+          gradientId: parseInt(get('gradientId') || 1, 10),
+          showAd: get('showAd'),
+          linkType: get('linkType') || null
+        })
+      }).then(r => r.json()).then(() => { document.getElementById('cardsMsg').textContent = ' Card updated.'; document.getElementById('cardsMsg').className = 'msg ok'; });
+    }
+
+    function addCard() {
+      fetch(ADMIN + '/feature-cards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ title: 'New Card', description: '', gradientId: 1, showAd: false, sortOrder: 99 })
+      }).then(r => r.json()).then(() => loadAll());
+    }
+
+    function deleteCard(id) {
+      if (!confirm('Delete this card?')) return;
+      fetch(ADMIN + '/feature-cards/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json()).then(() => loadAll());
+    }
+  </script>
+</body>
+</html>
