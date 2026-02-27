@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const { OAuth2Client } = require('google-auth-library');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const db = require('./db');
 
 const app = express();
@@ -28,7 +29,17 @@ if (allowedOriginsEnv.length === 0) {
 app.use(express.json());
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const upload = multer({ dest: 'uploads/', limits: { fileSize: 2 * 1024 * 1024 } });
+const upload = multer({
+  dest: 'uploads/',
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images are allowed'));
+    }
+  }
+});
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 
 // ----- Helpers -----
@@ -53,6 +64,15 @@ function authMiddleware(req, res, next) {
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
   try {
     req.user = jwt.verify(token, JWT_SECRET);
+
+    // Check if user is blocked or maintenance mode is on
+    const isMaintenance = getConfig('app.maintenance_mode') === '1';
+    if (isMaintenance) return res.status(503).json({ error: 'App is under maintenance. Please check back later.' });
+
+    const u = db.prepare('SELECT is_blocked FROM users WHERE id = ?').get(req.user.userId);
+    if (!u) return res.status(401).json({ error: 'User not found' });
+    if (u.is_blocked === 1) return res.status(403).json({ error: 'Your account has been blocked' });
+
     next();
   } catch {
     res.status(401).json({ error: 'Invalid token' });
@@ -140,7 +160,8 @@ app.post('/api/auth/google', async (req, res) => {
 app.post('/api/auth/send-email-otp', async (req, res) => {
   const { email } = req.body || {};
   if (!email) return res.status(400).json({ error: 'Email required' });
-  const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+  const otp = String(crypto.randomInt(100000, 1000000));
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
   db.prepare('INSERT INTO email_otps (email, otp, expires_at) VALUES (?, ?, ?)').run(email, otp, expiresAt);
 
@@ -182,14 +203,24 @@ app.post('/api/auth/verify-email-otp', (req, res) => {
 
 app.post('/api/app/open', authMiddleware, (req, res) => {
   const today = new Date().toISOString().slice(0, 10);
-  let row = db.prepare('SELECT * FROM user_daily WHERE user_id = ? AND date = ?').get(req.user.userId, today);
-  if (!row) db.prepare('INSERT INTO user_daily (user_id, date, opens) VALUES (?, ?, 1)').run(req.user.userId, today);
-  else db.prepare('UPDATE user_daily SET opens = opens + 1 WHERE user_id = ? AND date = ?').run(req.user.userId, today);
-  const openCount = (row ? row.opens : 0) + 1;
-  const dailyBonus = openCount === 1 ? 5 : 0;
-  if (dailyBonus > 0) db.prepare('UPDATE users SET diamonds = diamonds + ? WHERE id = ?').run(dailyBonus, req.user.userId);
-  const u = db.prepare('SELECT diamonds FROM users WHERE id = ?').get(req.user.userId);
-  res.json({ openCountToday: openCount, dailyLoginBonus: dailyBonus, diamonds: u.diamonds });
+
+  const tx = db.transaction(() => {
+    let row = db.prepare('SELECT * FROM user_daily WHERE user_id = ? AND date = ?').get(req.user.userId, today);
+    if (!row) db.prepare('INSERT INTO user_daily (user_id, date, opens) VALUES (?, ?, 1)').run(req.user.userId, today);
+    else db.prepare('UPDATE user_daily SET opens = opens + 1 WHERE user_id = ? AND date = ?').run(req.user.userId, today);
+    const openCount = (row ? row.opens : 0) + 1;
+    const dailyBonus = openCount === 1 ? 5 : 0;
+    if (dailyBonus > 0) db.prepare('UPDATE users SET diamonds = diamonds + ? WHERE id = ?').run(dailyBonus, req.user.userId);
+    const u = db.prepare('SELECT diamonds FROM users WHERE id = ?').get(req.user.userId);
+    return { openCountToday: openCount, dailyLoginBonus: dailyBonus, diamonds: u.diamonds };
+  });
+
+  try {
+    const result = tx();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
 app.get('/api/home/stats', authMiddleware, (req, res) => {
@@ -197,7 +228,10 @@ app.get('/api/home/stats', authMiddleware, (req, res) => {
   const u = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.userId);
   const d = db.prepare('SELECT * FROM user_daily WHERE user_id = ? AND date = ?').get(req.user.userId, today) || { ads_watched: 0, scratch_used: 0 };
   const adsWatched = d.ads_watched || 0;
-  const scratchUnlocked = adsWatched >= 4 || (u.diamonds || 0) >= 50;
+
+  const dailyLimit = parseInt(getConfig('task.daily_limit') || '4', 10);
+  const scratchUnlocked = adsWatched >= dailyLimit || (u.diamonds || 0) >= 50;
+
   res.json({
     openCountToday: 1, adsWatchedToday: adsWatched, scratchUnlocked, scratchUsed: !!d.scratch_used, scratchResult: null,
     diamonds: u.diamonds || 0, xp: u.xp || 0, level: u.level || 1, streak: u.streak || 0, calendarStreak: u.calendar_streak || 0,
@@ -220,8 +254,10 @@ app.get('/api/scratch/status', authMiddleware, (req, res) => {
   const d = db.prepare('SELECT * FROM user_daily WHERE user_id = ? AND date = ?').get(req.user.userId, today) || {};
   const u = db.prepare('SELECT diamonds FROM users WHERE id = ?').get(req.user.userId);
   const adsWatched = d.ads_watched || 0;
+  const dailyLimit = parseInt(getConfig('task.daily_limit') || '4', 10);
+
   res.json({
-    scratchUnlocked: adsWatched >= 4 || (u.diamonds || 0) >= 50,
+    scratchUnlocked: adsWatched >= dailyLimit || (u.diamonds || 0) >= 50,
     scratchUsed: !!d.scratch_used,
     result: null,
     diamonds: u.diamonds || 0, weeklyUsed: 0, weeklyCap: 500,
@@ -231,13 +267,28 @@ app.get('/api/scratch/status', authMiddleware, (req, res) => {
 
 app.post('/api/scratch/do', authMiddleware, (req, res) => {
   const today = new Date().toISOString().slice(0, 10);
-  db.prepare('UPDATE user_daily SET scratch_used = 1 WHERE user_id = ? AND date = ?').run(req.user.userId, today);
-  const rewards = [{ id: '1', type: 'diamonds', label: '10 💎', value: 10, code: null }, { id: '2', type: 'xp', label: '50 XP', value: 50, code: null }, { id: '3', type: 'code', label: 'Reward Code', value: 0, code: 'FF2024' }];
-  const reward = rewards[Math.floor(Math.random() * rewards.length)];
-  db.prepare('UPDATE users SET diamonds = diamonds + ?, xp = xp + ? WHERE id = ?').run(reward.type === 'diamonds' ? reward.value : 0, reward.type === 'xp' ? reward.value : 0, req.user.userId);
-  db.prepare('INSERT INTO reward_items (user_id, type, label, value, code) VALUES (?, ?, ?, ?, ?)').run(req.user.userId, reward.type, reward.label, reward.value, reward.code);
-  const u = db.prepare('SELECT diamonds, xp FROM users WHERE id = ?').get(req.user.userId);
-  res.json({ reward, xp: u.xp, weeklyUsed: 0, weeklyCap: 500 });
+  const rewardDiamonds = parseInt(getConfig('task.reward_diamonds') || '10', 10);
+
+  const tx = db.transaction(() => {
+    db.prepare('UPDATE user_daily SET scratch_used = 1 WHERE user_id = ? AND date = ?').run(req.user.userId, today);
+    const rewards = [
+      { id: '1', type: 'diamonds', label: `${rewardDiamonds} 💎`, value: rewardDiamonds, code: null },
+      { id: '2', type: 'xp', label: '50 XP', value: 50, code: null },
+      { id: '3', type: 'code', label: 'Reward Code', value: 0, code: 'FF2024' }
+    ];
+    const reward = rewards[Math.floor(Math.random() * rewards.length)];
+    db.prepare('UPDATE users SET diamonds = diamonds + ?, xp = xp + ? WHERE id = ?').run(reward.type === 'diamonds' ? reward.value : 0, reward.type === 'xp' ? reward.value : 0, req.user.userId);
+    db.prepare('INSERT INTO reward_items (user_id, type, label, value, code) VALUES (?, ?, ?, ?, ?)').run(req.user.userId, reward.type, reward.label, reward.value, reward.code);
+    const u = db.prepare('SELECT diamonds, xp FROM users WHERE id = ?').get(req.user.userId);
+    return { reward, xp: u.xp, weeklyUsed: 0, weeklyCap: 500 };
+  });
+
+  try {
+    const result = tx();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Scratch failed due to an internal error.' });
+  }
 });
 
 app.post('/api/scratch/unlock-with-diamonds', authMiddleware, (req, res) => {
@@ -253,11 +304,20 @@ app.get('/api/wheel/status', authMiddleware, (req, res) => {
   res.json({ canSpin: true, usedToday: false, diamonds: u.diamonds || 0 });
 });
 app.post('/api/wheel/spin', authMiddleware, (req, res) => {
-  const prizes = [{ type: 'diamonds', label: '5 💎', value: 5 }, { type: 'xp', label: '20 XP', value: 20 }];
-  const prize = prizes[Math.floor(Math.random() * prizes.length)];
-  db.prepare('UPDATE users SET diamonds = diamonds + ?, xp = xp + ? WHERE id = ?').run(prize.type === 'diamonds' ? prize.value : 0, prize.type === 'xp' ? prize.value : 0, req.user.userId);
-  const u = db.prepare('SELECT diamonds, xp FROM users WHERE id = ?').get(req.user.userId);
-  res.json({ success: true, prize: { id: '1', ...prize }, diamonds: u.diamonds, xp: u.xp });
+  const tx = db.transaction(() => {
+    const prizes = [{ type: 'diamonds', label: '5 💎', value: 5 }, { type: 'xp', label: '20 XP', value: 20 }];
+    const prize = prizes[Math.floor(Math.random() * prizes.length)];
+    db.prepare('UPDATE users SET diamonds = diamonds + ?, xp = xp + ? WHERE id = ?').run(prize.type === 'diamonds' ? prize.value : 0, prize.type === 'xp' ? prize.value : 0, req.user.userId);
+    const u = db.prepare('SELECT diamonds, xp FROM users WHERE id = ?').get(req.user.userId);
+    return { success: true, prize: { id: '1', ...prize }, diamonds: u.diamonds, xp: u.xp };
+  });
+
+  try {
+    const result = tx();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Spin failed due to an internal error.' });
+  }
 });
 
 app.post('/api/store/extra-scratch', authMiddleware, (req, res) => res.json({}));
@@ -341,6 +401,126 @@ app.put('/admin/api/feature-cards/:id', adminAuth, (req, res) => {
 app.delete('/admin/api/feature-cards/:id', adminAuth, (req, res) => {
   db.prepare('DELETE FROM feature_cards WHERE id = ?').run(parseInt(req.params.id, 10));
   res.json({ ok: true });
+});
+
+// --- NEW ADMIN APIs ---
+
+// User Management
+app.get('/admin/api/users', adminAuth, (req, res) => {
+  const users = db.prepare('SELECT id, email, phone, ref_code, diamonds, xp, level, referral_count, is_blocked, created_at FROM users ORDER BY created_at DESC').all();
+  res.json(users);
+});
+
+app.put('/admin/api/users/:id', adminAuth, (req, res) => {
+  const { diamonds, xp, is_blocked } = req.body || {};
+  const userId = req.params.id;
+  db.prepare('UPDATE users SET diamonds=?, xp=?, is_blocked=? WHERE id=?').run(
+    diamonds !== undefined ? Number(diamonds) : 0,
+    xp !== undefined ? Number(xp) : 0,
+    is_blocked ? 1 : 0,
+    userId
+  );
+  res.json({ ok: true });
+});
+
+// Reward Requests
+app.get('/admin/api/reward-requests', adminAuth, (req, res) => {
+  const requests = db.prepare(`
+    SELECT r.id, r.user_id, r.status, r.requested_at, r.processed_at, c.title, c.cost_diamonds, c.cost_xp, u.email, u.phone
+    FROM reward_requests r 
+    JOIN coupons c ON r.coupon_id = c.id
+    LEFT JOIN users u ON r.user_id = u.id
+    ORDER BY r.requested_at DESC
+  `).all();
+  res.json(requests);
+});
+
+app.put('/admin/api/reward-requests/:id', adminAuth, (req, res) => {
+  const { status } = req.body || {}; // APPROVED or REJECTED
+  const reqId = parseInt(req.params.id, 10);
+  const now = new Date().toISOString();
+
+  if (status !== 'APPROVED' && status !== 'REJECTED') {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+
+  const tx = db.transaction(() => {
+    const request = db.prepare('SELECT * FROM reward_requests WHERE id = ?').get(reqId);
+    if (!request || request.status !== 'PENDING') return { error: 'Request not found or already processed' };
+
+    db.prepare('UPDATE reward_requests SET status = ?, processed_at = ? WHERE id = ?').run(status, now, reqId);
+
+    // If rejected, refund points
+    if (status === 'REJECTED') {
+      const coupon = db.prepare('SELECT cost_diamonds, cost_xp FROM coupons WHERE id = ?').get(request.coupon_id);
+      if (coupon) {
+        db.prepare('UPDATE users SET diamonds = diamonds + ?, xp = xp + ? WHERE id = ?').run(coupon.cost_diamonds, coupon.cost_xp, request.user_id);
+      }
+    }
+    return { ok: true };
+  });
+
+  try {
+    const result = tx();
+    if (result.error) return res.status(400).json(result);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Coupons
+app.get('/admin/api/coupons', adminAuth, (req, res) => {
+  const coupons = db.prepare('SELECT * FROM coupons ORDER BY id').all();
+  res.json(coupons);
+});
+
+app.post('/admin/api/coupons', adminAuth, (req, res) => {
+  const { title, description, cost_diamonds, cost_xp, is_active } = req.body || {};
+  db.prepare('INSERT INTO coupons (title, description, cost_diamonds, cost_xp, is_active) VALUES (?, ?, ?, ?, ?)')
+    .run(title || '', description || '', Number(cost_diamonds) || 0, Number(cost_xp) || 0, is_active ? 1 : 0);
+  res.json({ ok: true });
+});
+
+app.put('/admin/api/coupons/:id', adminAuth, (req, res) => {
+  const { title, description, cost_diamonds, cost_xp, is_active } = req.body || {};
+  db.prepare('UPDATE coupons SET title=?, description=?, cost_diamonds=?, cost_xp=?, is_active=? WHERE id=?')
+    .run(title || '', description || '', Number(cost_diamonds) || 0, Number(cost_xp) || 0, is_active ? 1 : 0, parseInt(req.params.id, 10));
+  res.json({ ok: true });
+});
+
+app.delete('/admin/api/coupons/:id', adminAuth, (req, res) => {
+  db.prepare('DELETE FROM coupons WHERE id = ?').run(parseInt(req.params.id, 10));
+  res.json({ ok: true });
+});
+
+// Referrals
+app.get('/admin/api/referrals', adminAuth, (req, res) => {
+  const referrals = db.prepare(`
+    SELECT id, email, phone, ref_code, referred_by, referral_count 
+    FROM users 
+    WHERE referred_by IS NOT NULL OR referral_count > 0
+    ORDER BY referral_count DESC
+  `).all();
+  res.json(referrals);
+});
+
+// Reset Leaderboard
+app.post('/admin/api/leaderboard/reset', adminAuth, (req, res) => {
+  db.prepare('UPDATE users SET xp = 0').run();
+  res.json({ ok: true });
+});
+
+// Fraud Alerts
+app.get('/admin/api/fraud-alerts', adminAuth, (req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const suspiciousUsers = db.prepare(`
+    SELECT u.id, u.email, u.phone, u.diamonds, d.ads_watched, d.scratch_used 
+    FROM users u
+    JOIN user_daily d ON u.id = d.user_id
+    WHERE d.date = ? AND (d.ads_watched > 50 OR d.scratch_used > 50 OR u.diamonds > 10000)
+  `).all(today);
+  res.json(suspiciousUsers);
 });
 
 // Serve admin panel

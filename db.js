@@ -16,6 +16,8 @@ db.exec(`
     streak INTEGER DEFAULT 0,
     calendar_streak INTEGER DEFAULT 0,
     referral_count INTEGER DEFAULT 0,
+    is_blocked INTEGER DEFAULT 0,
+    referred_by TEXT,
     created_at TEXT DEFAULT (datetime('now'))
   );
 
@@ -62,6 +64,24 @@ db.exec(`
     used INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS reward_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    coupon_id INTEGER,
+    status TEXT DEFAULT 'PENDING', 
+    requested_at TEXT DEFAULT (datetime('now')),
+    processed_at TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS coupons (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    description TEXT,
+    cost_diamonds INTEGER DEFAULT 0,
+    cost_xp INTEGER DEFAULT 0,
+    is_active INTEGER DEFAULT 1
+  );
 `);
 
 // Seed default config
@@ -82,11 +102,23 @@ const defaults = {
   'strings.profile': 'Profile',
   'strings.leaderboard': 'Leaderboard',
   'strings.store': 'Store',
-  'admin.password': 'admin123'
+  'admin.password': 'admin123',
+  'task.daily_limit': '4',
+  'task.reward_diamonds': '10',
+  'app.maintenance_mode': '0'
 };
 
 const st = db.prepare('INSERT OR IGNORE INTO config (key, value) VALUES (?, ?)');
 for (const [k, v] of Object.entries(defaults)) st.run(k, v);
+
+// Add default coupons if none exist
+const couponCount = db.prepare('SELECT COUNT(*) as c FROM coupons').get();
+if (couponCount.c === 0) {
+  const insC = db.prepare('INSERT INTO coupons (title, description, cost_diamonds, cost_xp) VALUES (?, ?, ?, ?)');
+  insC.run('₹10 Paytm Cash', 'Get ₹10 instantly in Paytm', 500, 0);
+  insC.run('₹50 Google Play', 'Google Play Gift Card worth ₹50', 2500, 0);
+  insC.run('100 Free Fire Diamonds', 'Direct topup to your FF uid', 4000, 0);
+}
 
 // Seed default feature cards (home)
 const cardCount = db.prepare('SELECT COUNT(*) as c FROM feature_cards').get();
@@ -96,6 +128,19 @@ if (cardCount.c === 0) {
   ins.run(1, 'Get rank emotes skin', 'You get rank in ff game avatar skin', 2, 1, 'rewards');
   ins.run(2, 'Emotes Skin', 'You get different avatars in ff emotes skin', 3, 0, null);
   ins.run(3, 'Play Free Game', 'You get free diamond in ff game skin', 4, 1, null);
+}
+
+// Alter `users` table to add new columns if they don't exist
+try {
+  db.exec('ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0');
+} catch (e) {
+  // Column might already exist
+}
+
+try {
+  db.exec('ALTER TABLE users ADD COLUMN referred_by TEXT');
+} catch (e) {
+  // Column might already exist
 }
 
 module.exports = db;

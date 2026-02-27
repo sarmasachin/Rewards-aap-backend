@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Scratch Rewards - Admin</title>
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     :root {
       --primary: #D4A853;
       --primary-dark: #B8923F;
@@ -20,6 +24,7 @@
       --success-bg: #ECFDF3;
       --success-text: #166534;
     }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -31,7 +36,12 @@
         radial-gradient(circle at bottom, rgba(248, 113, 113, 0.14), transparent 55%),
         var(--bg);
     }
-    h1, h2, h3 { margin: 0; }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+    }
 
     /* Top bar */
     .shell {
@@ -39,6 +49,7 @@
       margin: 0 auto;
       padding: 20px 16px 32px;
     }
+
     .topbar {
       display: flex;
       align-items: center;
@@ -50,28 +61,32 @@
       box-shadow: 0 18px 40px rgba(15, 23, 42, 0.55);
       margin-bottom: 20px;
     }
+
     .topbar-title {
       display: flex;
       align-items: center;
       gap: 10px;
     }
+
     .topbar-logo {
       width: 32px;
       height: 32px;
       border-radius: 10px;
-      background: radial-gradient(circle at 30% 20%, #ffffff, rgba(255,255,255,0) 55%), linear-gradient(135deg, var(--primary), var(--primary-dark));
+      background: radial-gradient(circle at 30% 20%, #ffffff, rgba(255, 255, 255, 0) 55%), linear-gradient(135deg, var(--primary), var(--primary-dark));
       display: flex;
       align-items: center;
       justify-content: center;
       color: #111827;
       font-weight: 800;
       font-size: 18px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
     }
+
     .topbar h1 {
       font-size: 1.1rem;
       letter-spacing: 0.02em;
     }
+
     .topbar span.badge {
       display: inline-flex;
       align-items: center;
@@ -90,18 +105,22 @@
       grid-template-columns: minmax(0, 3fr) minmax(0, 2.2fr);
       gap: 20px;
     }
+
     @media (max-width: 960px) {
-      .layout { grid-template-columns: minmax(0, 1fr); }
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
 
     .card {
-      background: linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.98));
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
       border-radius: 16px;
       padding: 18px 18px 16px;
       border: 1px solid var(--border-subtle);
-      box-shadow: 0 18px 40px rgba(15,23,42,0.7);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
       margin-bottom: 18px;
     }
+
     .card h2 {
       margin: 0 0 4px;
       font-size: 0.98rem;
@@ -109,18 +128,20 @@
       text-transform: uppercase;
       color: var(--text-muted);
     }
+
     .card-subtitle {
       font-size: 0.8rem;
       color: var(--text-muted);
       margin-bottom: 14px;
     }
+
     .section-label {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 3px 9px;
       border-radius: 999px;
-      background: rgba(15,23,42,0.9);
+      background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(148, 163, 184, 0.45);
       font-size: 0.73rem;
       color: var(--text-muted);
@@ -134,6 +155,7 @@
       color: var(--text-muted);
       font-size: 0.84rem;
     }
+
     input[type="text"],
     input[type="password"],
     input[type="color"],
@@ -150,6 +172,7 @@
       outline: none;
       transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
+
     input[type="text"]:focus,
     input[type="password"]:focus,
     input[type="number"]:focus {
@@ -157,9 +180,11 @@
       box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.6);
       background: #020617;
     }
+
     input[type="password"] {
       letter-spacing: 0.06em;
     }
+
     input[type="color"] {
       height: 40px;
       cursor: pointer;
@@ -183,16 +208,18 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
       transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
     }
+
     button:hover {
       transform: translateY(-1px);
       filter: brightness(1.03);
-      box-shadow: 0 18px 36px rgba(0,0,0,0.6);
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.6);
     }
+
     button.secondary {
-      background: rgba(15,23,42,0.95);
+      background: rgba(15, 23, 42, 0.95);
       color: var(--text-main);
       border: 1px solid rgba(148, 163, 184, 0.55);
       box-shadow: none;
@@ -205,19 +232,22 @@
       justify-content: center;
       padding: 32px 16px;
     }
+
     .login-box {
       width: 100%;
       max-width: 420px;
-      background: radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 60%), rgba(15,23,42,0.98);
+      background: radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 60%), rgba(15, 23, 42, 0.98);
       border-radius: 18px;
       padding: 28px 24px 22px;
       border: 1px solid rgba(148, 163, 184, 0.6);
       box-shadow: 0 22px 45px rgba(15, 23, 42, 0.75);
     }
+
     .login-box h1 {
       font-size: 1.3rem;
       margin-bottom: 6px;
     }
+
     .login-subtitle {
       font-size: 0.86rem;
       color: var(--text-muted);
@@ -230,7 +260,8 @@
       flex-wrap: wrap;
       align-items: flex-end;
     }
-    .row > div {
+
+    .row>div {
       flex: 1;
       min-width: 180px;
     }
@@ -241,10 +272,12 @@
       margin-top: 10px;
       font-size: 0.8rem;
     }
+
     .msg.ok {
       background: var(--success-bg);
       color: var(--success-text);
     }
+
     .msg.err {
       background: var(--danger-bg);
       color: var(--danger-text);
@@ -256,13 +289,16 @@
       font-size: 0.86rem;
       margin-top: 6px;
     }
-    th, td {
+
+    th,
+    td {
       padding: 9px 8px;
       text-align: left;
       border-bottom: 1px solid rgba(30, 41, 59, 0.85);
     }
+
     th {
-      background: rgba(15,23,42,0.95);
+      background: rgba(15, 23, 42, 0.95);
       color: var(--text-muted);
       font-weight: 600;
       position: sticky;
@@ -270,7 +306,11 @@
       z-index: 1;
     }
 
-    .small { font-size: 0.86rem; color: var(--text-muted); }
+    .small {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+    }
+
     .color-preview {
       width: 24px;
       height: 24px;
@@ -279,20 +319,67 @@
       vertical-align: middle;
       margin-left: 8px;
       border: 1px solid rgba(148, 163, 184, 0.6);
-      box-shadow: inset 0 0 0 1px rgba(15,23,42,0.5);
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.5);
     }
+
     .pill {
       padding: 2px 8px;
       border-radius: 999px;
       font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      background: rgba(15,23,42,0.9);
-      border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
       color: var(--text-muted);
+    }
+
+    /* Top navigation inside admin panel */
+    .nav {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 4px 0 20px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+
+    .nav-item {
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      box-shadow: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-item span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.7);
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(212, 168, 83, 0.16), rgba(56, 189, 248, 0.1));
+      color: var(--text-main);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .nav-item.active span.dot {
+      background: var(--primary);
+      box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.35);
     }
   </style>
 </head>
+
 <body>
   <div id="loginScreen" class="login-wrapper">
     <div class="login-box">
@@ -324,37 +411,69 @@
           </div>
         </div>
         <span class="badge">
-          <span style="width:8px;height:8px;border-radius:999px;background:#22C55E;box-shadow:0 0 0 4px rgba(34,197,94,0.28);"></span>
+          <span
+            style="width:8px;height:8px;border-radius:999px;background:#22C55E;box-shadow:0 0 0 4px rgba(34,197,94,0.28);"></span>
           Connected
         </span>
       </div>
 
+      <div class="nav">
+        <button type="button" class="nav-item active" data-tab="design" onclick="switchTab('design')">
+          <span class="dot"></span> Design
+        </button>
+        <button type="button" class="nav-item" data-tab="content" onclick="switchTab('content')">
+          <span class="dot"></span> Text & Strings
+        </button>
+        <button type="button" class="nav-item" data-tab="cards" onclick="switchTab('cards')">
+          <span class="dot"></span> Home Feature Cards
+        </button>
+        <button type="button" class="nav-item" data-tab="users" onclick="switchTab('users')">
+          <span class="dot"></span> Users
+        </button>
+        <button type="button" class="nav-item" data-tab="rewards" onclick="switchTab('rewards')">
+          <span class="dot"></span> Rewards & Coupons
+        </button>
+        <button type="button" class="nav-item" data-tab="leaderboard" onclick="switchTab('leaderboard')">
+          <span class="dot"></span> Referrals & Leaderboard
+        </button>
+        <button type="button" class="nav-item" data-tab="settings" onclick="switchTab('settings')">
+          <span class="dot"></span> Settings & Security
+        </button>
+      </div>
+
       <div class="layout">
         <div>
-          <div class="card">
+          <div class="card section" id="section-theme">
             <div class="section-label">Theme</div>
             <h2>Colors</h2>
             <p class="card-subtitle">Instantly update primary palette for the mobile app UI.</p>
             <div class="row">
-        <div><label>Primary <span class="color-preview" id="prevPrimary"></span></label><input type="color" id="theme.primary" value="#D4A853" /></div>
-        <div><label>Primary Dark <span class="color-preview" id="prevPrimaryDark"></span></label><input type="color" id="theme.primaryDark" value="#B8923F" /></div>
-        <div><label>Accent <span class="color-preview" id="prevAccent"></span></label><input type="color" id="theme.accent" value="#D4A853" /></div>
-        <div><label>Background <span class="color-preview" id="prevBackground"></span></label><input type="color" id="theme.background" value="#F5F5F5" /></div>
-        <div><label>Surface <span class="color-preview" id="prevSurface"></span></label><input type="color" id="theme.surface" value="#FFFFFF" /></div>
-        <div><label>Success <span class="color-preview" id="prevSuccess"></span></label><input type="color" id="theme.success" value="#34C759" /></div>
+              <div><label>Primary <span class="color-preview" id="prevPrimary"></span></label><input type="color"
+                  id="theme.primary" value="#D4A853" /></div>
+              <div><label>Primary Dark <span class="color-preview" id="prevPrimaryDark"></span></label><input
+                  type="color" id="theme.primaryDark" value="#B8923F" /></div>
+              <div><label>Accent <span class="color-preview" id="prevAccent"></span></label><input type="color"
+                  id="theme.accent" value="#D4A853" /></div>
+              <div><label>Background <span class="color-preview" id="prevBackground"></span></label><input type="color"
+                  id="theme.background" value="#F5F5F5" /></div>
+              <div><label>Surface <span class="color-preview" id="prevSurface"></span></label><input type="color"
+                  id="theme.surface" value="#FFFFFF" /></div>
+              <div><label>Success <span class="color-preview" id="prevSuccess"></span></label><input type="color"
+                  id="theme.success" value="#34C759" /></div>
             </div>
             <button onclick="saveConfig()">Save Colors</button>
             <span id="colorMsg"></span>
           </div>
 
-          <div class="card">
+          <div class="card section" id="section-brand">
             <div class="section-label">Brand</div>
             <h2>Logo</h2>
             <p class="card-subtitle">Update the logo used across the mobile experience.</p>
             <label>Logo URL (ya upload karo)</label>
             <div class="row">
               <input type="text" id="logoUrl" placeholder="https://... ya /api/uploads/filename" style="flex:1;" />
-              <button type="button" class="secondary" onclick="document.getElementById('logoFile').click()">Upload</button>
+              <button type="button" class="secondary"
+                onclick="document.getElementById('logoFile').click()">Upload</button>
               <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="uploadLogo(this)" />
             </div>
             <button onclick="saveLogoUrl()">Save Logo URL</button>
@@ -363,7 +482,7 @@
         </div>
 
         <div>
-          <div class="card">
+          <div class="card section" id="section-strings">
             <div class="section-label">Content</div>
             <h2>App Text (Strings)</h2>
             <p class="card-subtitle">Update all user-facing labels like app name, buttons and sections.</p>
@@ -372,169 +491,543 @@
             <span id="stringsMsg"></span>
           </div>
 
-          <div class="card">
+          <div class="card section" id="section-cards">
             <div class="section-label">Home</div>
             <h2>Feature Cards</h2>
-            <p class="card-subtitle">Control the promotional cards on the home screen (title, description, AD badge & target screen).</p>
-            <table>
-              <thead><tr><th>#</th><th>Title</th><th>Description</th><th>Gradient</th><th>AD</th><th>Link</th><th></th></tr></thead>
-              <tbody id="cardsTable"></tbody>
-            </table>
-            <button onclick="addCard()">+ Add Card</button>
-            <span id="cardsMsg"></span>
+            <p class="card-subtitle">Control the promotional cards on the home screen (title, description, AD badge &
+              target screen).</p>
+            <div class="card section" id="section-cards">
+              <div class="section-label">Home</div>
+              <h2>Feature Cards</h2>
+              <p class="card-subtitle">Control the promotional cards on the home screen (title, description, AD badge &
+                target screen).</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Gradient</th>
+                    <th>AD</th>
+                    <th>Link</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="cardsTable"></tbody>
+              </table>
+              <button onclick="addCard()">+ Add Card</button>
+              <span id="cardsMsg"></span>
+            </div>
+          </div>
+
+          <!-- NEW SECTIONS -->
+          <div style="grid-column: 1 / -1;">
+            <div class="card section" id="section-users" style="display:none;">
+              <div class="section-label">User Management</div>
+              <h2>All Users</h2>
+              <p class="card-subtitle">Manage diamonds, XP, and block suspicious accounts.</p>
+              <div style="overflow-x:auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID/Email/Phone</th>
+                      <th>Code</th>
+                      <th>Diamonds</th>
+                      <th>XP</th>
+                      <th>Refs</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTable"></tbody>
+                </table>
+              </div>
+              <span id="usersMsg"></span>
+            </div>
+
+            <div class="card section" id="section-rewards" style="display:none;">
+              <div class="section-label">Rewards Control</div>
+              <h2>Payout Requests</h2>
+              <p class="card-subtitle">Approve or reject user payout requests.</p>
+              <div style="overflow-x:auto; margin-bottom: 24px;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>User</th>
+                      <th>Coupon</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="requestsTable"></tbody>
+                </table>
+                <span id="reqMsg"></span>
+              </div>
+
+              <h2>Available Coupons</h2>
+              <p class="card-subtitle">Manage items available in the App Store.</p>
+              <div style="overflow-x:auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Description</th>
+                      <th>💎 Cost</th>
+                      <th>XP Cost</th>
+                      <th>Active</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="couponsTable"></tbody>
+                </table>
+              </div>
+              <button onclick="addCoupon()">+ Add Coupon</button>
+              <span id="couponsMsg"></span>
+            </div>
+
+            <div class="card section" id="section-leaderboard" style="display:none;">
+              <div class="section-label">Referrals</div>
+              <h2>Referral Tracking</h2>
+              <p class="card-subtitle">See who invited whom and top referrers.</p>
+              <div style="overflow-x:auto; margin-bottom: 24px;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User (ID / Contact)</th>
+                      <th>Ref Code</th>
+                      <th>Referred By</th>
+                      <th>Total Refs</th>
+                    </tr>
+                  </thead>
+                  <tbody id="referralsTable"></tbody>
+                </table>
+              </div>
+
+              <div class="section-label">Leaderboard</div>
+              <h2>Reset Leaderboard</h2>
+              <p class="card-subtitle">Reset all XP to 0 for a fresh season.</p>
+              <button class="secondary" onclick="resetLeaderboard()"
+                style="color: var(--danger-text); border-color: var(--danger-text);">⚠️ Reset All XP to 0</button>
+              <span id="lbMsg"></span>
+            </div>
+
+            <div class="card section" id="section-settings" style="display:none;">
+              <div class="section-label">Global Settings & Security</div>
+
+              <h2>App Maintenance Mode</h2>
+              <p class="card-subtitle">Block all app access temporarily.</p>
+              <div class="row" style="margin-bottom: 24px;">
+                <div>
+                  <label>Maintenance Mode <span id="prevMaintenance" class="color-preview"
+                      style="border-radius:4px; width:16px; height:16px;"></span></label>
+                  <select id="app.maintenance_mode"
+                    style="width:100%; max-width:200px; padding:9px 11px; margin-top:4px; border-radius:10px; background:rgba(15,23,42,0.95); color:#fff; border:1px solid rgba(148,163,184,0.6);">
+                    <option value="0">OFF (Live)</option>
+                    <option value="1">ON (Maintenance)</option>
+                  </select>
+                </div>
+                <button onclick="saveMaintenance()">Save Status</button>
+                <span id="maintMsg"></span>
+              </div>
+
+              <h2>Task Configurations</h2>
+              <p class="card-subtitle">Set limits and rewards for daily scratch/ads.</p>
+              <div class="row" style="margin-bottom: 24px;">
+                <div><label>Daily Task Limit (e.g. Ads to Unlock)</label><input type="number" id="task.daily_limit"
+                    value="4" /></div>
+                <div><label>Reward per Scratch (Diamonds)</label><input type="number" id="task.reward_diamonds"
+                    value="10" /></div>
+                <button onclick="saveTaskConfigs()">Save Configs</button>
+                <span id="taskConfMsg"></span>
+              </div>
+
+              <h2>Security: Fraud Alerts</h2>
+              <p class="card-subtitle">Users with abnormally high daily activity (Today).</p>
+              <div style="overflow-x:auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Diamonds</th>
+                      <th>Ads Watched</th>
+                      <th>Scratch Used</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fraudTable"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    const API = '/api';
-    const ADMIN = '/admin/api';
-    let token = '';
+    <script>
+      const API = '/api';
+      const ADMIN = '/admin/api';
+      let token = '';
 
-    function getToken() {
-      token = sessionStorage.getItem('adminToken') || '';
-      return token;
-    }
-    function setToken(t) {
-      token = t;
-      sessionStorage.setItem('adminToken', t);
-    }
+      function getToken() {
+        token = sessionStorage.getItem('adminToken') || '';
+        return token;
+      }
+      function setToken(t) {
+        token = t;
+        sessionStorage.setItem('adminToken', t);
+      }
 
-    function doLogin() {
-      const pwd = document.getElementById('adminPassword').value;
-      const errEl = document.getElementById('loginErr');
-      if (!pwd) { errEl.textContent = 'Password daalo'; errEl.style.display = 'block'; return; }
-      setToken(pwd);
-      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
-        .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'block'; loadAll(); } else throw new Error('Wrong password'); })
-        .catch(e => { errEl.textContent = e.message || 'Login failed'; errEl.style.display = 'block'; });
-    }
+      function doLogin() {
+        const pwd = document.getElementById('adminPassword').value;
+        const errEl = document.getElementById('loginErr');
+        if (!pwd) { errEl.textContent = 'Password daalo'; errEl.style.display = 'block'; return; }
+        setToken(pwd);
+        fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'block'; loadAll(); } else throw new Error('Wrong password'); })
+          .catch(e => { errEl.textContent = e.message || 'Login failed'; errEl.style.display = 'block'; });
+      }
 
-    if (getToken()) {
-      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
-        .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'block'; loadAll(); } else setToken(''); });
-    }
+      if (getToken()) {
+        fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'block'; loadAll(); } else setToken(''); });
+      }
 
-    function loadAll() {
-      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
-        .then(r => r.json())
-        .then(data => {
-          Object.entries(data).forEach(([k, v]) => {
-            const el = document.getElementById(k);
-            if (el && (el.type === 'color' || el.type === 'text')) el.value = v || el.value;
-          });
-          updateColorPreviews();
-          const strKeys = Object.keys(data).filter(x => x.startsWith('strings.'));
-          let html = '';
-          strKeys.forEach(key => {
-            const short = key.replace('strings.', '');
-            html += '<div class="row"><div><label>' + short + '</label><input type="text" id="' + key + '" value="' + (data[key] || '').replace(/"/g, '&quot;') + '" /></div></div>';
-          });
-          if (!strKeys.length) {
-            ['app_name','phone','login','home','wallet','profile','leaderboard','store','send_otp','watch_ad','scratch_card','tap_to_scratch','copy_link','claim'].forEach(k => {
-              html += '<div class="row"><div><label>strings.' + k + '</label><input type="text" id="strings.' + k + '" value="" /></div></div>';
+      function loadAll() {
+        fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json())
+          .then(data => {
+            Object.entries(data).forEach(([k, v]) => {
+              const el = document.getElementById(k);
+              if (el && (el.type === 'color' || el.type === 'text')) el.value = v || el.value;
             });
-          }
-          document.getElementById('stringsList').innerHTML = html || '<p>No strings in config. Add keys like strings.app_name</p>';
-        });
+            updateColorPreviews();
+            const strKeys = Object.keys(data).filter(x => x.startsWith('strings.'));
+            let html = '';
+            strKeys.forEach(key => {
+              const short = key.replace('strings.', '');
+              html += '<div class="row"><div><label>' + short + '</label><input type="text" id="' + key + '" value="' + (data[key] || '').replace(/"/g, '&quot;') + '" /></div></div>';
+            });
+            if (!strKeys.length) {
+              ['app_name', 'phone', 'login', 'home', 'wallet', 'profile', 'leaderboard', 'store', 'send_otp', 'watch_ad', 'scratch_card', 'tap_to_scratch', 'copy_link', 'claim'].forEach(k => {
+                html += '<div class="row"><div><label>strings.' + k + '</label><input type="text" id="strings.' + k + '" value="" /></div></div>';
+              });
+            }
+            document.getElementById('stringsList').innerHTML = html || '<p>No strings in config. Add keys like strings.app_name</p>';
+          });
 
-      fetch(ADMIN + '/feature-cards', { headers: { Authorization: 'Bearer ' + token } })
-        .then(r => r.json())
-        .then(cards => {
-          const tbody = document.getElementById('cardsTable');
-          tbody.innerHTML = cards.map(c => `
+        fetch(ADMIN + '/feature-cards', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json())
+          .then(cards => {
+            const tbody = document.getElementById('cardsTable');
+            tbody.innerHTML = cards.map(c => `
             <tr data-id="${c.id}">
               <td>${c.sort_order}</td>
-              <td><input type="text" data-field="title" value="${(c.title||'').replace(/"/g,'&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #ddd;padding:4px;" /></td>
-              <td><input type="text" data-field="description" value="${(c.description||'').replace(/"/g,'&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #ddd;padding:4px;" /></td>
+              <td><input type="text" data-field="title" value="${(c.title || '').replace(/"/g, '&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #ddd;padding:4px;" /></td>
+              <td><input type="text" data-field="description" value="${(c.description || '').replace(/"/g, '&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #ddd;padding:4px;" /></td>
               <td><input type="number" data-field="gradientId" min="1" max="5" value="${c.gradient_id}" onchange="saveCardRow(${c.id})" style="width:50px;" /></td>
               <td><input type="checkbox" data-field="showAd" ${c.show_ad ? 'checked' : ''} onchange="saveCardRow(${c.id})" /></td>
-              <td><input type="text" data-field="linkType" value="${(c.link_type||'').replace(/"/g,'&quot;')}" onchange="saveCardRow(${c.id})" placeholder="scratch|rewards" style="width:80px;" /></td>
+              <td><input type="text" data-field="linkType" value="${(c.link_type || '').replace(/"/g, '&quot;')}" onchange="saveCardRow(${c.id})" placeholder="scratch|rewards" style="width:80px;" /></td>
               <td><button onclick="deleteCard(${c.id})">Delete</button></td>
             </tr>
           `).join('');
+          });
+
+        // Load Users
+        fetch(ADMIN + '/users', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json())
+          .then(users => {
+            document.getElementById('usersTable').innerHTML = users.map(u => `
+            <tr data-user="${u.id}">
+              <td>
+                <div style="font-size:0.8rem; font-weight:bold;">${u.email || u.phone || u.id}</div>
+                <div style="font-size:0.7rem; color:gray;">Joined: ${new Date(u.created_at).toLocaleDateString()}</div>
+              </td>
+              <td>${u.ref_code}</td>
+              <td><input type="number" data-field="diamonds" value="${u.diamonds}" style="width:70px; padding:4px;" /></td>
+              <td><input type="number" data-field="xp" value="${u.xp}" style="width:70px; padding:4px;" /></td>
+              <td>${u.referral_count}</td>
+              <td>
+                <select data-field="is_blocked" style="padding:4px; font-size:0.8rem;">
+                  <option value="0" ${!u.is_blocked ? 'selected' : ''}>Active</option>
+                  <option value="1" ${u.is_blocked ? 'selected' : ''}>Blocked</option>
+                </select>
+              </td>
+              <td><button onclick="saveUser('${u.id}')" style="padding:4px 8px; font-size:0.75rem;">Save</button></td>
+            </tr>
+          `).join('');
+          });
+
+        // Load Referrals
+        fetch(ADMIN + '/referrals', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json())
+          .then(refs => {
+            document.getElementById('referralsTable').innerHTML = refs.length ? refs.map(r => `
+            <tr>
+              <td>${r.email || r.phone || r.id}</td>
+              <td><span class="pill">${r.ref_code}</span></td>
+              <td>${r.referred_by || '-'}</td>
+              <td><strong>${r.referral_count}</strong></td>
+            </tr>
+          `).join('') : '<tr><td colspan="4">No referral data yet.</td></tr>';
+          });
+
+        // Load Fraud Alerts
+        fetch(ADMIN + '/fraud-alerts', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json())
+          .then(alerts => {
+            document.getElementById('fraudTable').innerHTML = alerts.length ? alerts.map(a => `
+            <tr style="background: rgba(185,28,28,0.1);">
+              <td>${a.email || a.phone || a.id}</td>
+              <td>${a.diamonds}</td>
+              <td>${a.ads_watched}</td>
+              <td>${a.scratch_used}</td>
+            </tr>
+          `).join('') : '<tr><td colspan="4">✅ No suspicious activity today.</td></tr>';
+          });
+
+        // Load Coupons & Requests
+        loadRewards();
+      }
+
+      function updateColorPreviews() {
+        ['primary', 'primaryDark', 'accent', 'background', 'surface', 'success'].forEach(name => {
+          const el = document.getElementById('theme.' + name);
+          if (el) document.getElementById('prev' + name.charAt(0).toUpperCase() + name.slice(1)).style.background = el.value;
         });
-    }
+      }
+      document.addEventListener('input', e => { if (e.target.id && e.target.id.startsWith('theme.')) updateColorPreviews(); });
 
-    function updateColorPreviews() {
-      ['primary','primaryDark','accent','background','surface','success'].forEach(name => {
-        const el = document.getElementById('theme.' + name);
-        if (el) document.getElementById('prev' + name.charAt(0).toUpperCase() + name.slice(1)).style.background = el.value;
-      });
-    }
-    document.addEventListener('input', e => { if (e.target.id && e.target.id.startsWith('theme.')) updateColorPreviews(); });
+      function saveConfig() {
+        const payload = {};
+        ['theme.primary', 'theme.primaryDark', 'theme.accent', 'theme.background', 'theme.surface', 'theme.success'].forEach(k => {
+          const el = document.getElementById(k);
+          if (el) payload[k] = el.value;
+        });
+        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
+          .then(r => r.json()).then(() => { document.getElementById('colorMsg').textContent = ' Saved.'; document.getElementById('colorMsg').className = 'msg ok'; })
+          .catch(() => { document.getElementById('colorMsg').textContent = ' Error'; document.getElementById('colorMsg').className = 'msg err'; });
+      }
 
-    function saveConfig() {
-      const payload = {};
-      ['theme.primary','theme.primaryDark','theme.accent','theme.background','theme.surface','theme.success'].forEach(k => {
-        const el = document.getElementById(k);
-        if (el) payload[k] = el.value;
-      });
-      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
-        .then(r => r.json()).then(() => { document.getElementById('colorMsg').textContent = ' Saved.'; document.getElementById('colorMsg').className = 'msg ok'; })
-        .catch(() => { document.getElementById('colorMsg').textContent = ' Error'; document.getElementById('colorMsg').className = 'msg err'; });
-    }
+      function saveLogoUrl() {
+        const url = document.getElementById('logoUrl').value.trim();
+        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'logo.url': url }) })
+          .then(r => r.json()).then(() => { document.getElementById('logoMsg').textContent = ' Saved.'; document.getElementById('logoMsg').className = 'msg ok'; });
+      }
 
-    function saveLogoUrl() {
-      const url = document.getElementById('logoUrl').value.trim();
-      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'logo.url': url }) })
-        .then(r => r.json()).then(() => { document.getElementById('logoMsg').textContent = ' Saved.'; document.getElementById('logoMsg').className = 'msg ok'; });
-    }
+      function uploadLogo(input) {
+        if (!input.files.length) return;
+        const fd = new FormData();
+        fd.append('logo', input.files[0]);
+        fetch(ADMIN + '/logo', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd })
+          .then(r => r.json())
+          .then(data => { document.getElementById('logoUrl').value = data.url || ''; document.getElementById('logoMsg').textContent = ' Uploaded. Save URL if needed.'; document.getElementById('logoMsg').className = 'msg ok'; })
+          .catch(() => { document.getElementById('logoMsg').textContent = ' Upload failed'; document.getElementById('logoMsg').className = 'msg err'; });
+      }
 
-    function uploadLogo(input) {
-      if (!input.files.length) return;
-      const fd = new FormData();
-      fd.append('logo', input.files[0]);
-      fetch(ADMIN + '/logo', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd })
-        .then(r => r.json())
-        .then(data => { document.getElementById('logoUrl').value = data.url || ''; document.getElementById('logoMsg').textContent = ' Uploaded. Save URL if needed.'; document.getElementById('logoMsg').className = 'msg ok'; })
-        .catch(() => { document.getElementById('logoMsg').textContent = ' Upload failed'; document.getElementById('logoMsg').className = 'msg err'; });
-    }
+      function saveStrings() {
+        const payload = {};
+        document.querySelectorAll('#stringsList input[id^="strings."]').forEach(el => { payload[el.id] = el.value; });
+        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
+          .then(r => r.json()).then(() => { document.getElementById('stringsMsg').textContent = ' Saved.'; document.getElementById('stringsMsg').className = 'msg ok'; });
+      }
 
-    function saveStrings() {
-      const payload = {};
-      document.querySelectorAll('#stringsList input[id^="strings."]').forEach(el => { payload[el.id] = el.value; });
-      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
-        .then(r => r.json()).then(() => { document.getElementById('stringsMsg').textContent = ' Saved.'; document.getElementById('stringsMsg').className = 'msg ok'; });
-    }
+      function saveCardRow(id) {
+        const row = document.querySelector('tr[data-id="' + id + '"]');
+        if (!row) return;
+        const get = (f) => {
+          const el = row.querySelector('[data-field="' + f + '"]');
+          if (!el) return null;
+          if (el.type === 'checkbox') return el.checked;
+          return el.value;
+        };
+        fetch(ADMIN + '/feature-cards/' + id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({
+            title: get('title'),
+            description: get('description'),
+            gradientId: parseInt(get('gradientId') || 1, 10),
+            showAd: get('showAd'),
+            linkType: get('linkType') || null
+          })
+        }).then(r => r.json()).then(() => { document.getElementById('cardsMsg').textContent = ' Card updated.'; document.getElementById('cardsMsg').className = 'msg ok'; });
+      }
 
-    function saveCardRow(id) {
-      const row = document.querySelector('tr[data-id="' + id + '"]');
-      if (!row) return;
-      const get = (f) => {
-        const el = row.querySelector('[data-field="' + f + '"]');
-        if (!el) return null;
-        if (el.type === 'checkbox') return el.checked;
-        return el.value;
+      function addCard() {
+        fetch(ADMIN + '/feature-cards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ title: 'New Card', description: '', gradientId: 1, showAd: false, sortOrder: 99 })
+        }).then(r => r.json()).then(() => loadAll());
+      }
+
+      function deleteCard(id) {
+        if (!confirm('Delete this card?')) return;
+        fetch(ADMIN + '/feature-cards/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json()).then(() => loadAll());
+      }
+
+      // --- NEW ADMIN FUNCTIONS ---
+
+      function saveUser(id) {
+        const row = document.querySelector(`tr[data-user="${id}"]`);
+        if (!row) return;
+        const diamonds = row.querySelector('[data-field="diamonds"]').value;
+        const xp = row.querySelector('[data-field="xp"]').value;
+        const is_blocked = row.querySelector('[data-field="is_blocked"]').value === "1";
+
+        fetch(ADMIN + '/users/' + id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ diamonds, xp, is_blocked })
+        }).then(r => r.json()).then(() => {
+          const msg = document.getElementById('usersMsg');
+          msg.textContent = 'User ' + id + ' saved.';
+          msg.className = 'msg ok';
+          setTimeout(() => msg.textContent = '', 3000);
+        });
+      }
+
+      function loadRewards() {
+        // Requests
+        fetch(ADMIN + '/reward-requests', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json())
+          .then(reqs => {
+            document.getElementById('requestsTable').innerHTML = reqs.length ? reqs.map(r => `
+          <tr>
+            <td>${new Date(r.requested_at).toLocaleString()}</td>
+            <td><div style="font-size:0.8rem;">${r.email || r.phone || r.user_id}</div></td>
+            <td>${r.title}</td>
+            <td>
+              <span class="pill" style="background:${r.status === 'APPROVED' ? '#166534' : (r.status === 'REJECTED' ? '#991b1b' : '#b45309')}">
+                ${r.status}
+              </span>
+            </td>
+            <td>
+              ${r.status === 'PENDING' ? `
+                <button onclick="processRequest(${r.id}, 'APPROVED')" style="padding:4px 8px; font-size:0.75rem; background:var(--success-bg); color:var(--success-text);">Approve</button>
+                <button onclick="processRequest(${r.id}, 'REJECTED')" style="padding:4px 8px; font-size:0.75rem; background:var(--danger-bg); color:var(--danger-text);">Reject</button>
+              ` : '-'}
+            </td>
+          </tr>
+        `).join('') : '<tr><td colspan="5">No pending requests.</td></tr>';
+          });
+
+        // Coupons
+        fetch(ADMIN + '/coupons', { headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json())
+          .then(coupons => {
+            document.getElementById('couponsTable').innerHTML = coupons.map(c => `
+          <tr data-coupon="${c.id}">
+            <td><input type="text" data-field="title" value="${(c.title || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="padding:4px;" /></td>
+            <td><input type="text" data-field="description" value="${(c.description || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="padding:4px;" /></td>
+            <td><input type="number" data-field="cost_diamonds" value="${c.cost_diamonds}" onchange="saveCouponRow(${c.id})" style="width:70px; padding:4px;" /></td>
+            <td><input type="number" data-field="cost_xp" value="${c.cost_xp}" onchange="saveCouponRow(${c.id})" style="width:70px; padding:4px;" /></td>
+            <td><input type="checkbox" data-field="is_active" ${c.is_active ? 'checked' : ''} onchange="saveCouponRow(${c.id})" /></td>
+            <td><button onclick="deleteCoupon(${c.id})" style="padding:4px 8px; font-size:0.7rem;">Del</button></td>
+          </tr>
+        `).join('');
+          });
+      }
+
+      function processRequest(id, status) {
+        if (!confirm(`Mark request as ${status}?`)) return;
+        fetch(ADMIN + '/reward-requests/' + id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ status })
+        }).then(r => r.json()).then(() => loadRewards());
+      }
+
+      function saveCouponRow(id) {
+        const row = document.querySelector(`tr[data-coupon="${id}"]`);
+        if (!row) return;
+        const get = (f) => {
+          const el = row.querySelector('[data-field="' + f + '"]');
+          if (!el) return null;
+          if (el.type === 'checkbox') return el.checked;
+          return el.value;
+        };
+        fetch(ADMIN + '/coupons/' + id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ title: get('title'), description: get('description'), cost_diamonds: get('cost_diamonds'), cost_xp: get('cost_xp'), is_active: get('is_active') })
+        }).then(r => r.json()).then(() => { document.getElementById('couponsMsg').textContent = ' Saved.'; document.getElementById('couponsMsg').className = 'msg ok'; setTimeout(() => document.getElementById('couponsMsg').textContent = '', 2000); });
+      }
+
+      function addCoupon() {
+        fetch(ADMIN + '/coupons', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ title: 'New Coupon', description: '', cost_diamonds: 500, cost_xp: 0, is_active: true })
+        }).then(r => r.json()).then(() => loadRewards());
+      }
+
+      function deleteCoupon(id) {
+        if (!confirm('Delete this coupon?')) return;
+        fetch(ADMIN + '/coupons/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json()).then(() => loadRewards());
+      }
+
+      function resetLeaderboard() {
+        if (!confirm('DANGER: Reset all users XP to 0? This cannot be undone.')) return;
+        fetch(ADMIN + '/leaderboard/reset', { method: 'POST', headers: { Authorization: 'Bearer ' + token } })
+          .then(r => r.json()).then(() => {
+            document.getElementById('lbMsg').textContent = ' Leaderboard Reset.';
+            document.getElementById('lbMsg').className = 'msg ok';
+          });
+      }
+
+      function saveMaintenance() {
+        const val = document.getElementById('app.maintenance_mode').value;
+        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'app.maintenance_mode': val }) })
+          .then(r => r.json()).then(() => {
+            document.getElementById('maintMsg').textContent = ' Saved.';
+            document.getElementById('maintMsg').className = 'msg ok';
+            document.getElementById('prevMaintenance').style.background = val === '1' ? 'var(--danger-text)' : 'var(--success-text)';
+          });
+      }
+
+      function saveTaskConfigs() {
+        const val1 = document.getElementById('task.daily_limit').value;
+        const val2 = document.getElementById('task.reward_diamonds').value;
+        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'task.daily_limit': val1, 'task.reward_diamonds': val2 }) })
+          .then(r => r.json()).then(() => {
+            document.getElementById('taskConfMsg').textContent = ' Saved.';
+            document.getElementById('taskConfMsg').className = 'msg ok';
+          });
+      }
+
+      const tabSections = {
+        design: ['section-theme', 'section-brand'],
+        content: ['section-strings'],
+        cards: ['section-cards'],
+        users: ['section-users'],
+        rewards: ['section-rewards'],
+        leaderboard: ['section-leaderboard'],
+        settings: ['section-settings']
       };
-      fetch(ADMIN + '/feature-cards/' + id, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({
-          title: get('title'),
-          description: get('description'),
-          gradientId: parseInt(get('gradientId') || 1, 10),
-          showAd: get('showAd'),
-          linkType: get('linkType') || null
-        })
-      }).then(r => r.json()).then(() => { document.getElementById('cardsMsg').textContent = ' Card updated.'; document.getElementById('cardsMsg').className = 'msg ok'; });
-    }
 
-    function addCard() {
-      fetch(ADMIN + '/feature-cards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({ title: 'New Card', description: '', gradientId: 1, showAd: false, sortOrder: 99 })
-      }).then(r => r.json()).then(() => loadAll());
-    }
+      function switchTab(tab) {
+        document.querySelectorAll('.nav-item').forEach(btn => {
+          if (btn.dataset.tab === tab) btn.classList.add('active');
+          else btn.classList.remove('active');
+        });
 
-    function deleteCard(id) {
-      if (!confirm('Delete this card?')) return;
-      fetch(ADMIN + '/feature-cards/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } })
-        .then(r => r.json()).then(() => loadAll());
-    }
-  </script>
+        document.querySelectorAll('.section').forEach(sec => {
+          sec.style.display = 'none';
+        });
+
+        (tabSections[tab] || []).forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'block';
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        switchTab('design');
+      });
+    </script>
 </body>
+
 </html>
