@@ -16,7 +16,6 @@ db.exec(`
     level INTEGER DEFAULT 1,
     streak INTEGER DEFAULT 0,
     calendar_streak INTEGER DEFAULT 0,
-    calendar_streak INTEGER DEFAULT 0,
     referral_count INTEGER DEFAULT 0,
     is_blocked INTEGER DEFAULT 0,
     referred_by TEXT,
