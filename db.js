@@ -7,6 +7,7 @@ const db = new Database(path.join(__dirname, 'data.db'));
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
+    name TEXT,
     email TEXT,
     phone TEXT,
     ref_code TEXT UNIQUE,
@@ -15,73 +16,74 @@ db.exec(`
     level INTEGER DEFAULT 1,
     streak INTEGER DEFAULT 0,
     calendar_streak INTEGER DEFAULT 0,
+    calendar_streak INTEGER DEFAULT 0,
     referral_count INTEGER DEFAULT 0,
     is_blocked INTEGER DEFAULT 0,
     referred_by TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TEXT DEFAULT(datetime('now'))
   );
 
-  CREATE TABLE IF NOT EXISTS user_daily (
-    user_id TEXT,
-    date TEXT,
-    opens INTEGER DEFAULT 0,
-    ads_watched INTEGER DEFAULT 0,
-    scratch_used INTEGER DEFAULT 0,
-    PRIMARY KEY (user_id, date)
-  );
+  CREATE TABLE IF NOT EXISTS user_daily(
+              user_id TEXT,
+              date TEXT,
+              opens INTEGER DEFAULT 0,
+              ads_watched INTEGER DEFAULT 0,
+              scratch_used INTEGER DEFAULT 0,
+              PRIMARY KEY(user_id, date)
+            );
 
-  CREATE TABLE IF NOT EXISTS config (
-    key TEXT PRIMARY KEY,
-    value TEXT
-  );
+  CREATE TABLE IF NOT EXISTS config(
+              key TEXT PRIMARY KEY,
+              value TEXT
+            );
 
-  CREATE TABLE IF NOT EXISTS feature_cards (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    sort_order INTEGER DEFAULT 0,
-    title TEXT,
-    description TEXT,
-    image_url TEXT,
-    gradient_id INTEGER DEFAULT 1,
-    show_ad INTEGER DEFAULT 0,
-    link_type TEXT,
-    link_value TEXT
-  );
+  CREATE TABLE IF NOT EXISTS feature_cards(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              sort_order INTEGER DEFAULT 0,
+              title TEXT,
+              description TEXT,
+              image_url TEXT,
+              gradient_id INTEGER DEFAULT 1,
+              show_ad INTEGER DEFAULT 0,
+              link_type TEXT,
+              link_value TEXT
+            );
 
-  CREATE TABLE IF NOT EXISTS reward_items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT,
-    type TEXT,
-    label TEXT,
-    value INTEGER DEFAULT 0,
-    code TEXT,
-    claimed_at TEXT DEFAULT (datetime('now'))
-  );
+  CREATE TABLE IF NOT EXISTS reward_items(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id TEXT,
+              type TEXT,
+              label TEXT,
+              value INTEGER DEFAULT 0,
+              code TEXT,
+              claimed_at TEXT DEFAULT(datetime('now'))
+            );
 
-  CREATE TABLE IF NOT EXISTS email_otps (
-    email TEXT,
-    otp TEXT,
-    expires_at TEXT,
-    used INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT (datetime('now'))
-  );
+  CREATE TABLE IF NOT EXISTS email_otps(
+              email TEXT,
+              otp TEXT,
+              expires_at TEXT,
+              used INTEGER DEFAULT 0,
+              created_at TEXT DEFAULT(datetime('now'))
+            );
 
-  CREATE TABLE IF NOT EXISTS reward_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT,
-    coupon_id INTEGER,
-    status TEXT DEFAULT 'PENDING', 
-    requested_at TEXT DEFAULT (datetime('now')),
-    processed_at TEXT
-  );
+  CREATE TABLE IF NOT EXISTS reward_requests(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id TEXT,
+              coupon_id INTEGER,
+              status TEXT DEFAULT 'PENDING',
+              requested_at TEXT DEFAULT(datetime('now')),
+              processed_at TEXT
+            );
 
-  CREATE TABLE IF NOT EXISTS coupons (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT,
-    description TEXT,
-    cost_diamonds INTEGER DEFAULT 0,
-    cost_xp INTEGER DEFAULT 0,
-    is_active INTEGER DEFAULT 1
-  );
+  CREATE TABLE IF NOT EXISTS coupons(
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              title TEXT,
+              description TEXT,
+              cost_diamonds INTEGER DEFAULT 0,
+              cost_xp INTEGER DEFAULT 0,
+              is_active INTEGER DEFAULT 1
+            );
 `);
 
 // Seed default config
@@ -133,6 +135,28 @@ if (cardCount.c === 0) {
 // Alter `users` table to add new columns if they don't exist
 try {
   db.exec('ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0');
+} catch (e) { /* Ignore */ }
+try {
+  db.exec('ALTER TABLE users ADD COLUMN name TEXT');
+} catch (e) { /* Ignore */ }
+
+// Alter `coupons` table for new category layout
+try {
+  db.exec('ALTER TABLE coupons ADD COLUMN category TEXT DEFAULT "Rewards"');
+} catch (e) { /* Ignore */ }
+try {
+  db.exec('ALTER TABLE coupons ADD COLUMN image_url TEXT');
+} catch (e) { /* Ignore */ }
+try {
+  db.exec('ALTER TABLE coupons ADD COLUMN amount INTEGER DEFAULT 0');
+} catch (e) { /* Ignore */ }
+
+// Make sure default seed coupons have populated categories
+db.prepare('UPDATE coupons SET category = ?, image_url = ?, amount = ? WHERE title = ? AND amount = 0').run('Get Paytm Cash', 'paytm', 10, '₹10 Paytm Cash');
+db.prepare('UPDATE coupons SET category = ?, image_url = ?, amount = ? WHERE title = ? AND amount = 0').run('Get Redeem Code!', 'play_store', 50, '₹50 Google Play');
+db.prepare("UPDATE coupons SET category = ?, image_url = ?, amount = ? WHERE title LIKE '%Free Fire%' AND amount = 0").run('Game Rewards', 'ff', 100);
+try {
+  db.exec('ALTER TABLE users ADD COLUMN is_blocked INTEGER DEFAULT 0');
 } catch (e) {
   // Column might already exist
 }
@@ -142,5 +166,13 @@ try {
 } catch (e) {
   // Column might already exist
 }
+
+try {
+  db.exec('ALTER TABLE users ADD COLUMN coins INTEGER DEFAULT 0');
+} catch (e) { /* Ignore */ }
+
+try {
+  db.exec('ALTER TABLE users ADD COLUMN profile_image TEXT');
+} catch (e) { /* Ignore */ }
 
 module.exports = db;

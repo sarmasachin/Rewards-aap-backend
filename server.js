@@ -128,7 +128,7 @@ app.get('/api/config', (req, res) => {
 // Auth - Google (verify idToken)
 app.post('/api/auth/google', async (req, res) => {
   try {
-    const { idToken } = req.body || {};
+    const { idToken, referralCode } = req.body || {};
     if (!GOOGLE_CLIENT_ID || !googleClient) {
       return res.status(500).json({ error: 'Google login not configured (GOOGLE_CLIENT_ID missing)' });
     }
@@ -145,7 +145,17 @@ app.post('/api/auth/google', async (req, res) => {
     let u = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
     if (!u) {
       const refCode = 'REF' + Math.random().toString(36).slice(2, 8).toUpperCase();
-      db.prepare('INSERT INTO users (id, email, ref_code) VALUES (?, ?, ?)').run(userId, email || null, refCode);
+      let referredBy = null;
+      let initDiamonds = 0;
+      if (referralCode) {
+        const referrer = db.prepare('SELECT id FROM users WHERE ref_code = ? COLLATE NOCASE').get(referralCode);
+        if (referrer && referrer.id !== userId) {
+          referredBy = referrer.id;
+          initDiamonds = 50; // Welcome bonus for using ref code
+          db.prepare('UPDATE users SET diamonds = diamonds + 100, xp = xp + 50, referral_count = referral_count + 1 WHERE id = ?').run(referrer.id);
+        }
+      }
+      db.prepare('INSERT INTO users (id, email, ref_code, referred_by, diamonds) VALUES (?, ?, ?, ?, ?)').run(userId, email || null, refCode, referredBy, initDiamonds);
       u = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
     }
     const token = jwt.sign({ userId: u.id }, JWT_SECRET, { expiresIn: '30d' });
@@ -183,18 +193,28 @@ app.post('/api/auth/send-email-otp', async (req, res) => {
 });
 
 app.post('/api/auth/verify-email-otp', (req, res) => {
-  const { email, otp } = req.body || {};
+  const { email, otp, referralCode } = req.body || {};
   if (!email || !otp) return res.status(400).json({ error: 'Email and OTP required' });
   const now = new Date().toISOString();
   const row = db.prepare('SELECT * FROM email_otps WHERE email = ? AND otp = ? AND used = 0 AND expires_at > ? ORDER BY created_at DESC').get(email, otp, now);
   if (!row) return res.status(401).json({ error: 'Invalid or expired OTP' });
   db.prepare('UPDATE email_otps SET used = 1 WHERE email = ? AND otp = ?').run(email, otp);
 
-  const baseId = 'e_' + email.replace(/\\W/g, '');
+  const baseId = 'e_' + email.replace(/\W/g, '');
   let u = db.prepare('SELECT * FROM users WHERE id = ?').get(baseId);
   if (!u) {
     const refCode = 'REF' + Math.random().toString(36).slice(2, 8).toUpperCase();
-    db.prepare('INSERT INTO users (id, email, ref_code) VALUES (?, ?, ?)').run(baseId, email, refCode);
+    let referredBy = null;
+    let initDiamonds = 0;
+    if (referralCode) {
+      const referrer = db.prepare('SELECT id FROM users WHERE ref_code = ? COLLATE NOCASE').get(referralCode);
+      if (referrer && referrer.id !== baseId) {
+        referredBy = referrer.id;
+        initDiamonds = 50; // Welcome bonus
+        db.prepare('UPDATE users SET diamonds = diamonds + 100, xp = xp + 50, referral_count = referral_count + 1 WHERE id = ?').run(referrer.id);
+      }
+    }
+    db.prepare('INSERT INTO users (id, email, ref_code, referred_by, diamonds) VALUES (?, ?, ?, ?, ?)').run(baseId, email, refCode, referredBy, initDiamonds);
     u = db.prepare('SELECT * FROM users WHERE id = ?').get(baseId);
   }
   const token = jwt.sign({ userId: u.id }, JWT_SECRET, { expiresIn: '30d' });
@@ -230,7 +250,7 @@ app.get('/api/home/stats', authMiddleware, (req, res) => {
   const adsWatched = d.ads_watched || 0;
 
   const dailyLimit = parseInt(getConfig('task.daily_limit') || '4', 10);
-  const scratchUnlocked = adsWatched >= dailyLimit || (u.diamonds || 0) >= 50;
+  const scratchUnlocked = true; // Bypassed for testing purposes as requested
 
   res.json({
     openCountToday: 1, adsWatchedToday: adsWatched, scratchUnlocked, scratchUsed: !!d.scratch_used, scratchResult: null,
@@ -257,7 +277,7 @@ app.get('/api/scratch/status', authMiddleware, (req, res) => {
   const dailyLimit = parseInt(getConfig('task.daily_limit') || '4', 10);
 
   res.json({
-    scratchUnlocked: adsWatched >= dailyLimit || (u.diamonds || 0) >= 50,
+    scratchUnlocked: true, // Bypassed for testing purposes as requested
     scratchUsed: !!d.scratch_used,
     result: null,
     diamonds: u.diamonds || 0, weeklyUsed: 0, weeklyCap: 500,
@@ -265,22 +285,43 @@ app.get('/api/scratch/status', authMiddleware, (req, res) => {
   });
 });
 
+app.get('/api/payouts', authMiddleware, (req, res) => {
+  try {
+    const payouts = db.prepare('SELECT * FROM coupons WHERE is_active = 1 ORDER BY id ASC').all();
+    res.json({ payouts });
+  } catch (e) {
+    res.status(500).json({ error: 'DB error' });
+  }
+});
+
 app.post('/api/scratch/do', authMiddleware, (req, res) => {
   const today = new Date().toISOString().slice(0, 10);
   const rewardDiamonds = parseInt(getConfig('task.reward_diamonds') || '10', 10);
+  const rewardCoins = parseInt(getConfig('task.reward_coins') || '50', 10);
+  const rewardCode = getConfig('task.reward_code') || 'WINNER2024';
 
   const tx = db.transaction(() => {
     db.prepare('UPDATE user_daily SET scratch_used = 1 WHERE user_id = ? AND date = ?').run(req.user.userId, today);
     const rewards = [
       { id: '1', type: 'diamonds', label: `${rewardDiamonds} 💎`, value: rewardDiamonds, code: null },
-      { id: '2', type: 'xp', label: '50 XP', value: 50, code: null },
-      { id: '3', type: 'code', label: 'Reward Code', value: 0, code: 'FF2024' }
+      { id: '2', type: 'coins', label: `${rewardCoins} Coins`, value: rewardCoins, code: null },
+      { id: '3', type: 'code', label: 'Reward Code', value: 0, code: rewardCode },
+      { id: '4', type: 'none', label: 'Better luck next time', value: 0, code: null }
     ];
     const reward = rewards[Math.floor(Math.random() * rewards.length)];
-    db.prepare('UPDATE users SET diamonds = diamonds + ?, xp = xp + ? WHERE id = ?').run(reward.type === 'diamonds' ? reward.value : 0, reward.type === 'xp' ? reward.value : 0, req.user.userId);
-    db.prepare('INSERT INTO reward_items (user_id, type, label, value, code) VALUES (?, ?, ?, ?, ?)').run(req.user.userId, reward.type, reward.label, reward.value, reward.code);
-    const u = db.prepare('SELECT diamonds, xp FROM users WHERE id = ?').get(req.user.userId);
-    return { reward, xp: u.xp, weeklyUsed: 0, weeklyCap: 500 };
+
+    if (reward.type === 'diamonds') {
+      db.prepare('UPDATE users SET diamonds = diamonds + ? WHERE id = ?').run(reward.value, req.user.userId);
+    } else if (reward.type === 'coins') {
+      db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(reward.value, req.user.userId);
+    }
+
+    if (reward.type !== 'none') {
+      db.prepare('INSERT INTO reward_items (user_id, type, label, value, code) VALUES (?, ?, ?, ?, ?)').run(req.user.userId, reward.type, reward.label, reward.value, reward.code);
+    }
+
+    const u = db.prepare('SELECT diamonds, xp, coins FROM users WHERE id = ?').get(req.user.userId);
+    return { reward, xp: u.xp, coins: u.coins || 0, weeklyUsed: 0, weeklyCap: 500 };
   });
 
   try {
@@ -305,11 +346,21 @@ app.get('/api/wheel/status', authMiddleware, (req, res) => {
 });
 app.post('/api/wheel/spin', authMiddleware, (req, res) => {
   const tx = db.transaction(() => {
-    const prizes = [{ type: 'diamonds', label: '5 💎', value: 5 }, { type: 'xp', label: '20 XP', value: 20 }];
+    const prizes = [
+      { type: 'none', label: 'Better luck next time', value: 0 },
+      { type: 'diamonds', label: '2 💎', value: 2 },
+      { type: 'diamonds', label: '3 💎', value: 3 },
+      { type: 'diamonds', label: '5 💎', value: 5 },
+      { type: 'coins', label: '50 Coins', value: 50 },
+    ];
     const prize = prizes[Math.floor(Math.random() * prizes.length)];
-    db.prepare('UPDATE users SET diamonds = diamonds + ?, xp = xp + ? WHERE id = ?').run(prize.type === 'diamonds' ? prize.value : 0, prize.type === 'xp' ? prize.value : 0, req.user.userId);
-    const u = db.prepare('SELECT diamonds, xp FROM users WHERE id = ?').get(req.user.userId);
-    return { success: true, prize: { id: '1', ...prize }, diamonds: u.diamonds, xp: u.xp };
+    if (prize.type === 'diamonds') {
+      db.prepare('UPDATE users SET diamonds = diamonds + ? WHERE id = ?').run(prize.value, req.user.userId);
+    } else if (prize.type === 'coins') {
+      db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(prize.value, req.user.userId);
+    }
+    const u = db.prepare('SELECT diamonds, xp, coins FROM users WHERE id = ?').get(req.user.userId);
+    return { success: true, prize: { id: '1', ...prize }, diamonds: u.diamonds, xp: u.xp, coins: u.coins || 0 };
   });
 
   try {
@@ -328,14 +379,89 @@ app.get('/api/rewards/list', authMiddleware, (req, res) => {
   res.json({ rewards: rows.map(r => ({ type: r.type, label: r.label, value: r.value, code: r.code, at: r.at })) });
 });
 
+app.get('/api/payouts', authMiddleware, (req, res) => {
+  const coupons = db.prepare('SELECT * FROM coupons WHERE is_active = 1 ORDER BY category, amount ASC, cost_diamonds ASC').all();
+  // Group by category to make it easier for the client? Or just send flat list. 
+  // Let's send flat list, Android RecyclerView can handle headers easily if mapped.
+  res.json({ payouts: coupons.map(c => ({ id: c.id, title: c.title, description: c.description, category: c.category, amount: c.amount, imageUrl: c.image_url, costDiamonds: c.cost_diamonds })) });
+});
+
+app.post('/api/payouts/redeem', authMiddleware, (req, res) => {
+  const { couponId } = req.body || {};
+  if (!couponId) return res.status(400).json({ error: 'Coupon ID required' });
+
+  const tx = db.transaction(() => {
+    const u = db.prepare('SELECT diamonds FROM users WHERE id = ?').get(req.user.userId);
+    const c = db.prepare('SELECT * FROM coupons WHERE id = ? AND is_active = 1').get(couponId);
+
+    if (!c) return { error: 'Invalid or inactive coupon' };
+    if (u.diamonds < c.cost_diamonds) return { error: 'Not enough diamonds' };
+
+    // Deduct diamonds and log request
+    db.prepare('UPDATE users SET diamonds = diamonds - ? WHERE id = ?').run(c.cost_diamonds, req.user.userId);
+    db.prepare('INSERT INTO reward_requests (user_id, coupon_id, status) VALUES (?, ?, "PENDING")').run(req.user.userId, c.id);
+
+    const newU = db.prepare('SELECT diamonds FROM users WHERE id = ?').get(req.user.userId);
+    return { success: true, newDiamonds: newU.diamonds };
+  });
+
+  try {
+    const result = tx();
+    if (result.error) return res.status(400).json(result);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error while redeeming.' });
+  }
+});
+
 app.get('/api/leaderboard', authMiddleware, (req, res) => {
   const rows = db.prepare('SELECT id, ref_code, xp FROM users ORDER BY xp DESC LIMIT 20').all();
   res.json({ leaderboard: rows.map((r, i) => ({ userId: r.id, name: r.ref_code, xp: r.xp, rank: i + 1 })) });
 });
 
+app.get('/api/referrals/my-friends', authMiddleware, (req, res) => {
+  const u = db.prepare('SELECT ref_code FROM users WHERE id = ?').get(req.user.userId);
+  if (!u || !u.ref_code) return res.json({ referrals: [] });
+  const friends = db.prepare('SELECT email, phone, created_at FROM users WHERE referred_by = ? ORDER BY created_at DESC').all(u.ref_code);
+  res.json({
+    referrals: friends.map(f => ({
+      name: f.email || f.phone || 'Friend',
+      joined_at: f.created_at
+    }))
+  });
+});
+
 app.get('/api/profile', authMiddleware, (req, res) => {
   const u = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.userId);
-  res.json({ ...makeUserRow(u), weeklyUsed: 0, weeklyCap: 500, badgeDiamondRewards: null });
+  res.json({ ...makeUserRow(u), name: u.name, profileImage: u.profile_image, coins: u.coins || 0, weeklyUsed: 0, weeklyCap: 500, badgeDiamondRewards: null });
+});
+
+app.post('/api/profile/update', authMiddleware, (req, res) => {
+  const { name, email, profileImage } = req.body;
+
+  if (name !== undefined || email !== undefined || profileImage !== undefined) {
+    let query = 'UPDATE users SET ';
+    const params = [];
+    if (name !== undefined) {
+      query += 'name = ?, ';
+      params.push(name);
+    }
+    if (email !== undefined) {
+      query += 'email = ?, ';
+      params.push(email);
+    }
+    if (profileImage !== undefined) {
+      query += 'profile_image = ?, ';
+      params.push(profileImage);
+    }
+    query = query.slice(0, -2) + ' WHERE id = ?';
+    params.push(req.user.userId);
+
+    db.prepare(query).run(...params);
+  }
+
+  const u = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.userId);
+  res.json({ ...makeUserRow(u), name: u.name, profileImage: u.profile_image, coins: u.coins || 0, weeklyUsed: 0, weeklyCap: 500, badgeDiamondRewards: null });
 });
 
 app.post('/api/share/claim', authMiddleware, (req, res) => res.json({}));
@@ -476,16 +602,16 @@ app.get('/admin/api/coupons', adminAuth, (req, res) => {
 });
 
 app.post('/admin/api/coupons', adminAuth, (req, res) => {
-  const { title, description, cost_diamonds, cost_xp, is_active } = req.body || {};
-  db.prepare('INSERT INTO coupons (title, description, cost_diamonds, cost_xp, is_active) VALUES (?, ?, ?, ?, ?)')
-    .run(title || '', description || '', Number(cost_diamonds) || 0, Number(cost_xp) || 0, is_active ? 1 : 0);
+  const { title, description, cost_diamonds, cost_xp, is_active, category, image_url, amount } = req.body || {};
+  db.prepare('INSERT INTO coupons (title, description, cost_diamonds, cost_xp, is_active, category, image_url, amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(title || '', description || '', Number(cost_diamonds) || 0, Number(cost_xp) || 0, is_active ? 1 : 0, category || 'Rewards', image_url || null, Number(amount) || 0);
   res.json({ ok: true });
 });
 
 app.put('/admin/api/coupons/:id', adminAuth, (req, res) => {
-  const { title, description, cost_diamonds, cost_xp, is_active } = req.body || {};
-  db.prepare('UPDATE coupons SET title=?, description=?, cost_diamonds=?, cost_xp=?, is_active=? WHERE id=?')
-    .run(title || '', description || '', Number(cost_diamonds) || 0, Number(cost_xp) || 0, is_active ? 1 : 0, parseInt(req.params.id, 10));
+  const { title, description, cost_diamonds, cost_xp, is_active, category, image_url, amount } = req.body || {};
+  db.prepare('UPDATE coupons SET title=?, description=?, cost_diamonds=?, cost_xp=?, is_active=?, category=?, image_url=?, amount=? WHERE id=?')
+    .run(title || '', description || '', Number(cost_diamonds) || 0, Number(cost_xp) || 0, is_active ? 1 : 0, category || 'Rewards', image_url || null, Number(amount) || 0, parseInt(req.params.id, 10));
   res.json({ ok: true });
 });
 

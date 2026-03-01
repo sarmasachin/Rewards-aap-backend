@@ -573,6 +573,9 @@
                     <tr>
                       <th>Title</th>
                       <th>Description</th>
+                      <th>Category</th>
+                      <th>Amount</th>
+                      <th>Image</th>
                       <th>💎 Cost</th>
                       <th>XP Cost</th>
                       <th>Active</th>
@@ -631,13 +634,23 @@
                 <span id="maintMsg"></span>
               </div>
 
+              <h2>Home Layout Order</h2>
+              <p class="card-subtitle">Order of fixed cards. Format: task,scratch,refer,wheel,comeback</p>
+              <div class="row" style="margin-bottom: 24px;">
+                <div><label>Order (comma separated)</label><input type="text" id="home.layout_order"
+                    value="task,scratch,refer,comeback,wheel" style="width:100%;" /></div>
+                <button onclick="saveHomeOrder()">Save Order</button>
+                <span id="orderMsg"></span>
+              </div>
+
               <h2>Task Configurations</h2>
               <p class="card-subtitle">Set limits and rewards for daily scratch/ads.</p>
               <div class="row" style="margin-bottom: 24px;">
-                <div><label>Daily Task Limit (e.g. Ads to Unlock)</label><input type="number" id="task.daily_limit"
-                    value="4" /></div>
-                <div><label>Reward per Scratch (Diamonds)</label><input type="number" id="task.reward_diamonds"
-                    value="10" /></div>
+                <div><label>Daily Task Limit (e.g. Ads</label><input type="number" id="task.daily_limit" value="4" />
+                </div>
+                <div><label>Diamonds Reward</label><input type="number" id="task.reward_diamonds" value="10" /></div>
+                <div><label>Coins Reward</label><input type="number" id="task.reward_coins" value="50" /></div>
+                <div><label>Reward Code</label><input type="text" id="task.reward_code" value="WINNER2024" /></div>
                 <button onclick="saveTaskConfigs()">Save Configs</button>
                 <span id="taskConfMsg"></span>
               </div>
@@ -698,7 +711,7 @@
           .then(data => {
             Object.entries(data).forEach(([k, v]) => {
               const el = document.getElementById(k);
-              if (el && (el.type === 'color' || el.type === 'text')) el.value = v || el.value;
+              if (el && (el.type === 'color' || el.type === 'text' || el.type === 'number')) el.value = v || el.value;
             });
             updateColorPreviews();
             const strKeys = Object.keys(data).filter(x => x.startsWith('strings.'));
@@ -919,10 +932,13 @@
           .then(coupons => {
             document.getElementById('couponsTable').innerHTML = coupons.map(c => `
           <tr data-coupon="${c.id}">
-            <td><input type="text" data-field="title" value="${(c.title || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="padding:4px;" /></td>
-            <td><input type="text" data-field="description" value="${(c.description || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="padding:4px;" /></td>
-            <td><input type="number" data-field="cost_diamonds" value="${c.cost_diamonds}" onchange="saveCouponRow(${c.id})" style="width:70px; padding:4px;" /></td>
-            <td><input type="number" data-field="cost_xp" value="${c.cost_xp}" onchange="saveCouponRow(${c.id})" style="width:70px; padding:4px;" /></td>
+            <td><input type="text" data-field="title" value="${(c.title || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:100px; padding:4px;" /></td>
+            <td><input type="text" data-field="description" value="${(c.description || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:100px; padding:4px;" /></td>
+            <td><input type="text" data-field="category" value="${(c.category || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:80px; padding:4px;" /></td>
+            <td><input type="number" data-field="amount" value="${c.amount || 0}" onchange="saveCouponRow(${c.id})" style="width:60px; padding:4px;" /></td>
+            <td><input type="text" data-field="image_url" value="${(c.image_url || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:70px; padding:4px;" /></td>
+            <td><input type="number" data-field="cost_diamonds" value="${c.cost_diamonds}" onchange="saveCouponRow(${c.id})" style="width:60px; padding:4px;" /></td>
+            <td><input type="number" data-field="cost_xp" value="${c.cost_xp}" onchange="saveCouponRow(${c.id})" style="width:50px; padding:4px;" /></td>
             <td><input type="checkbox" data-field="is_active" ${c.is_active ? 'checked' : ''} onchange="saveCouponRow(${c.id})" /></td>
             <td><button onclick="deleteCoupon(${c.id})" style="padding:4px 8px; font-size:0.7rem;">Del</button></td>
           </tr>
@@ -951,7 +967,7 @@
         fetch(ADMIN + '/coupons/' + id, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ title: get('title'), description: get('description'), cost_diamonds: get('cost_diamonds'), cost_xp: get('cost_xp'), is_active: get('is_active') })
+          body: JSON.stringify({ title: get('title'), description: get('description'), category: get('category'), amount: get('amount'), image_url: get('image_url'), cost_diamonds: get('cost_diamonds'), cost_xp: get('cost_xp'), is_active: get('is_active') })
         }).then(r => r.json()).then(() => { document.getElementById('couponsMsg').textContent = ' Saved.'; document.getElementById('couponsMsg').className = 'msg ok'; setTimeout(() => document.getElementById('couponsMsg').textContent = '', 2000); });
       }
 
@@ -959,7 +975,7 @@
         fetch(ADMIN + '/coupons', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ title: 'New Coupon', description: '', cost_diamonds: 500, cost_xp: 0, is_active: true })
+          body: JSON.stringify({ title: 'New Coupon', description: '', category: 'Rewards', amount: 0, image_url: '', cost_diamonds: 500, cost_xp: 0, is_active: true })
         }).then(r => r.json()).then(() => loadRewards());
       }
 
@@ -988,10 +1004,21 @@
           });
       }
 
+      function saveHomeOrder() {
+        const val = document.getElementById('home.layout_order').value;
+        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'home.layout_order': val }) })
+          .then(r => r.json()).then(() => {
+            document.getElementById('orderMsg').textContent = ' Saved!';
+            document.getElementById('orderMsg').className = 'msg ok';
+          });
+      }
+
       function saveTaskConfigs() {
         const val1 = document.getElementById('task.daily_limit').value;
         const val2 = document.getElementById('task.reward_diamonds').value;
-        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'task.daily_limit': val1, 'task.reward_diamonds': val2 }) })
+        const val3 = document.getElementById('task.reward_coins').value;
+        const val4 = document.getElementById('task.reward_code').value;
+        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'task.daily_limit': val1, 'task.reward_diamonds': val2, 'task.reward_coins': val3, 'task.reward_code': val4 }) })
           .then(r => r.json()).then(() => {
             document.getElementById('taskConfMsg').textContent = ' Saved.';
             document.getElementById('taskConfMsg').className = 'msg ok';
