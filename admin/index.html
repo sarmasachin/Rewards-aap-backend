@@ -417,9 +417,9 @@
         </div>
       </div>
       <label>Password</label>
-      <input type="password" id="adminPassword" placeholder="Enter admin password" style="max-width:100%;" />
-      <button type="button" onclick="doLogin()" style="margin-top:16px;">Login</button>
-      <p id="loginErr" class="msg err" style="display:none;"></p>
+      <input type="password" id="adminPassword" placeholder="Enter admin password (default: admin123)" style="max-width:100%;" />
+      <button type="button" id="btnLogin" onclick="doLogin()" style="margin-top:16px;">Login</button>
+      <p id="loginErr" class="msg err" style="display:none; min-height:1.2em; margin-top:12px;"></p>
     </div>
   </div>
 
@@ -730,18 +730,42 @@
     }
 
     function doLogin() {
-      const pwd = document.getElementById('adminPassword').value;
+      const pwd = document.getElementById('adminPassword').value.trim();
       const errEl = document.getElementById('loginErr');
+      const btn = document.getElementById('btnLogin');
       if (!pwd) { errEl.textContent = 'Password daalo'; errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
+      errEl.textContent = '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Checking...'; }
       setToken(pwd);
-      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
-        .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'flex'; loadAll(); } else throw new Error('Wrong password'); })
-        .catch(e => { errEl.textContent = e.message || 'Login failed'; errEl.style.display = 'block'; });
+      var apiUrl = (typeof location !== 'undefined' && location.origin) ? (location.origin + '/admin/api/config') : (ADMIN + '/config');
+      fetch(apiUrl, { headers: { Authorization: 'Bearer ' + token } })
+        .then(function(r) {
+          if (r.ok) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'flex';
+            loadAll();
+          } else {
+            throw new Error('Wrong password. Try: admin123');
+          }
+        })
+        .catch(function(e) {
+          errEl.textContent = e.message || 'Login failed. Check internet or try password: admin123';
+          errEl.style.display = 'block';
+        })
+        .finally(function() {
+          if (btn) { btn.disabled = false; btn.textContent = 'Login'; }
+        });
     }
 
+    document.getElementById('adminPassword').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); doLogin(); }
+    });
     if (getToken()) {
-      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
-        .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'flex'; loadAll(); } else setToken(''); });
+      var apiUrl = (typeof location !== 'undefined' && location.origin) ? (location.origin + '/admin/api/config') : (ADMIN + '/config');
+      fetch(apiUrl, { headers: { Authorization: 'Bearer ' + token } })
+        .then(function(r) { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'flex'; loadAll(); } else setToken(''); })
+        .catch(function() { setToken(''); });
     }
 
     function loadDashboardStats() {
