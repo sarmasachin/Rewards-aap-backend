@@ -341,10 +341,28 @@ app.post('/api/scratch/do-extra', authMiddleware, (req, res) => res.json({ rewar
 app.post('/api/scratch/do-premium', authMiddleware, (req, res) => res.json({ reward: { label: 'Premium', value: 0 }, xp: 0 }));
 
 app.get('/api/wheel/status', authMiddleware, (req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
   const u = db.prepare('SELECT diamonds FROM users WHERE id = ?').get(req.user.userId);
-  res.json({ canSpin: true, usedToday: false, diamonds: u.diamonds || 0 });
+  let row = db.prepare('SELECT wheel_used FROM user_daily WHERE user_id = ? AND date = ?').get(req.user.userId, today);
+  if (!row) {
+    db.prepare('INSERT OR IGNORE INTO user_daily (user_id, date, wheel_used) VALUES (?, ?, 0)').run(req.user.userId, today);
+    row = { wheel_used: 0 };
+  }
+  const usedToday = (row.wheel_used || 0) > 0;
+  res.json({ canSpin: !usedToday, usedToday, diamonds: u.diamonds || 0 });
 });
+
 app.post('/api/wheel/spin', authMiddleware, (req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
+  let row = db.prepare('SELECT wheel_used FROM user_daily WHERE user_id = ? AND date = ?').get(req.user.userId, today);
+  if (!row) {
+    db.prepare('INSERT OR IGNORE INTO user_daily (user_id, date, wheel_used) VALUES (?, ?, 0)').run(req.user.userId, today);
+    row = { wheel_used: 0 };
+  }
+  if ((row.wheel_used || 0) > 0) {
+    return res.status(400).json({ error: 'Already spun today. Try again tomorrow!', prize: { type: 'none', label: 'Better luck next time', value: 0 } });
+  }
+
   const tx = db.transaction(() => {
     const prizes = [
       { type: 'none', label: 'Better luck next time', value: 0 },
@@ -359,6 +377,7 @@ app.post('/api/wheel/spin', authMiddleware, (req, res) => {
     } else if (prize.type === 'coins') {
       db.prepare('UPDATE users SET coins = coins + ? WHERE id = ?').run(prize.value, req.user.userId);
     }
+    db.prepare('UPDATE user_daily SET wheel_used = 1 WHERE user_id = ? AND date = ?').run(req.user.userId, today);
     const u = db.prepare('SELECT diamonds, xp, coins FROM users WHERE id = ?').get(req.user.userId);
     return { success: true, prize: { id: '1', ...prize }, diamonds: u.diamonds, xp: u.xp, coins: u.coins || 0 };
   });
@@ -649,8 +668,11 @@ app.get('/admin/api/fraud-alerts', adminAuth, (req, res) => {
   res.json(suspiciousUsers);
 });
 
-// Serve admin panel
+// Serve admin panel (no-cache so left sidebar layout always loads)
 app.get('/admin', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, 'admin', 'index.html'));
 });
 

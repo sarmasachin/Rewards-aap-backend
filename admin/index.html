@@ -4,378 +4,404 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Scratch Rewards - Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     :root {
       --primary: #D4A853;
       --primary-dark: #B8923F;
-      --bg: #070B11;
-      --bg-soft: #0E1622;
-      --card-bg: #111827;
-      --border-subtle: rgba(148, 163, 184, 0.35);
-      --text-main: #E5E7EB;
-      --text-muted: #9CA3AF;
-      --danger-bg: #FEF2F2;
-      --danger-text: #B91C1C;
-      --success-bg: #ECFDF3;
+      --sidebar-bg: #0f172a;
+      --sidebar-text: #e2e8f0;
+      --sidebar-muted: #94a3b8;
+      --sidebar-hover: #1e293b;
+      --sidebar-active: rgba(212, 168, 83, 0.15);
+      --main-bg: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --danger-bg: #fef2f2;
+      --danger-text: #b91c1c;
+      --success-bg: #ecfdf5;
       --success-text: #166534;
     }
 
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text-main);
-      background:
-        radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 55%),
-        radial-gradient(circle at top right, rgba(96, 165, 250, 0.18), transparent 55%),
-        radial-gradient(circle at bottom, rgba(248, 113, 113, 0.14), transparent 55%),
-        var(--bg);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      color: var(--text-primary);
+      background: var(--main-bg);
+      display: flex;
+      overflow-x: hidden;
     }
 
-    h1,
-    h2,
-    h3 {
-      margin: 0;
+    /* ----- Sidebar ----- */
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      height: 100vh;
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 100;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.08);
     }
 
-    /* Top bar */
-    .shell {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 20px 16px 32px;
-    }
-
-    .topbar {
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 12px 18px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(17, 24, 39, 0.95));
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.55);
-      margin-bottom: 20px;
+      gap: 12px;
     }
 
-    .topbar-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .topbar-logo {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: radial-gradient(circle at 30% 20%, #ffffff, rgba(255, 255, 255, 0) 55%), linear-gradient(135deg, var(--primary), var(--primary-dark));
+    .sidebar-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #111827;
-      font-weight: 800;
+      font-weight: 700;
       font-size: 18px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      color: #0f172a;
     }
 
-    .topbar h1 {
-      font-size: 1.1rem;
-      letter-spacing: 0.02em;
+    .sidebar-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
     }
 
-    .topbar span.badge {
-      display: inline-flex;
+    .sidebar-subtitle {
+      font-size: 0.7rem;
+      color: var(--sidebar-muted);
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+    }
+
+    .nav-section {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--sidebar-muted);
+      padding: 12px 12px 6px;
+      margin-top: 8px;
+    }
+
+    .nav-section:first-child { margin-top: 0; }
+
+    .nav-link {
+      display: flex;
       align-items: center;
-      padding: 4px 10px;
-      border-radius: 999px;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: var(--sidebar-text);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-link:hover {
+      background: var(--sidebar-hover);
+      color: #fff;
+    }
+
+    .nav-link.active {
+      background: var(--sidebar-active);
+      color: var(--primary);
+    }
+
+    .nav-link svg {
+      width: 20px;
+      height: 20px;
+      opacity: 0.85;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
       font-size: 0.75rem;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(148, 163, 184, 0.55);
-      color: var(--text-muted);
-      gap: 6px;
+      color: var(--sidebar-muted);
     }
 
-    /* Layout */
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 3fr) minmax(0, 2.2fr);
-      gap: 20px;
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.25);
+      margin-right: 8px;
     }
 
-    @media (max-width: 960px) {
-      .layout {
-        grid-template-columns: minmax(0, 1fr);
-      }
+    /* ----- Main content ----- */
+    .main {
+      flex: 1;
+      margin-left: 260px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
+
+    .main-header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .main-title {
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    .page {
+      display: none;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .page.active { display: block; }
 
     .card {
-      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
-      border-radius: 16px;
-      padding: 18px 18px 16px;
-      border: 1px solid var(--border-subtle);
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
-      margin-bottom: 18px;
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
 
     .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
       margin: 0 0 4px;
-      font-size: 0.98rem;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      color: var(--text-muted);
     }
 
     .card-subtitle {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 14px;
-    }
-
-    .section-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.45);
-      font-size: 0.73rem;
-      color: var(--text-muted);
-      margin-bottom: 8px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
     }
 
     label {
       display: block;
-      margin-top: 10px;
+      font-size: 0.85rem;
       font-weight: 500;
-      color: var(--text-muted);
-      font-size: 0.84rem;
+      color: var(--text-primary);
+      margin-top: 14px;
+      margin-bottom: 6px;
     }
 
     input[type="text"],
     input[type="password"],
-    input[type="color"],
     input[type="number"] {
       width: 100%;
-      max-width: 420px;
-      padding: 9px 11px;
-      margin-top: 4px;
+      max-width: 400px;
+      padding: 10px 14px;
       border-radius: 10px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background: rgba(15, 23, 42, 0.95);
-      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text-primary);
       font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus {
       outline: none;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-    }
-
-    input[type="text"]:focus,
-    input[type="password"]:focus,
-    input[type="number"]:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.6);
-      background: #020617;
-    }
-
-    input[type="password"] {
-      letter-spacing: 0.06em;
+      box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.2);
     }
 
     input[type="color"] {
+      width: 48px;
       height: 40px;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
       cursor: pointer;
-      padding: 0;
-      border-radius: 999px;
-      border-width: 2px;
-      max-width: 80px;
-      background: transparent;
+    }
+
+    select {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-family: inherit;
+      max-width: 280px;
     }
 
     button {
-      padding: 9px 18px;
-      background: linear-gradient(135deg, var(--primary), #facc15);
-      color: #111827;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--primary), #e5b84d);
+      color: #0f172a;
       border: none;
-      border-radius: 999px;
-      cursor: pointer;
+      border-radius: 10px;
       font-weight: 600;
-      font-size: 0.86rem;
-      margin-top: 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
-      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+      gap: 8px;
+      margin-top: 16px;
+      transition: transform 0.08s, box-shadow 0.2s;
     }
 
     button:hover {
       transform: translateY(-1px);
-      filter: brightness(1.03);
-      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 4px 14px rgba(212, 168, 83, 0.4);
     }
 
     button.secondary {
-      background: rgba(15, 23, 42, 0.95);
-      color: var(--text-main);
-      border: 1px solid rgba(148, 163, 184, 0.55);
-      box-shadow: none;
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--card-border);
     }
 
-    .login-wrapper {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 16px;
-    }
-
-    .login-box {
-      width: 100%;
-      max-width: 420px;
-      background: radial-gradient(circle at top left, rgba(250, 204, 21, 0.18), transparent 60%), rgba(15, 23, 42, 0.98);
-      border-radius: 18px;
-      padding: 28px 24px 22px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      box-shadow: 0 22px 45px rgba(15, 23, 42, 0.75);
-    }
-
-    .login-box h1 {
-      font-size: 1.3rem;
-      margin-bottom: 6px;
-    }
-
-    .login-subtitle {
-      font-size: 0.86rem;
-      color: var(--text-muted);
-      margin-bottom: 18px;
+    button.danger {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border: 1px solid rgba(185,28,28,0.3);
     }
 
     .row {
       display: flex;
-      gap: 16px;
+      gap: 20px;
       flex-wrap: wrap;
       align-items: flex-end;
     }
 
-    .row>div {
-      flex: 1;
-      min-width: 180px;
-    }
+    .row > div { flex: 1; min-width: 160px; }
 
     .msg {
-      padding: 9px 11px;
+      padding: 10px 14px;
       border-radius: 8px;
-      margin-top: 10px;
-      font-size: 0.8rem;
+      margin-top: 12px;
+      font-size: 0.85rem;
     }
 
-    .msg.ok {
-      background: var(--success-bg);
-      color: var(--success-text);
-    }
-
-    .msg.err {
-      background: var(--danger-bg);
-      color: var(--danger-text);
-    }
+    .msg.ok { background: var(--success-bg); color: var(--success-text); }
+    .msg.err { background: var(--danger-bg); color: var(--danger-text); }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.86rem;
-      margin-top: 6px;
+      font-size: 0.875rem;
+      margin-top: 12px;
     }
 
-    th,
-    td {
-      padding: 9px 8px;
+    th, td {
+      padding: 12px 14px;
       text-align: left;
-      border-bottom: 1px solid rgba(30, 41, 59, 0.85);
+      border-bottom: 1px solid var(--card-border);
     }
 
     th {
-      background: rgba(15, 23, 42, 0.95);
-      color: var(--text-muted);
+      background: #f8fafc;
+      color: var(--text-secondary);
       font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    .small {
-      font-size: 0.86rem;
-      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .color-preview {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
       display: inline-block;
       vertical-align: middle;
       margin-left: 8px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--card-border);
     }
 
     .pill {
-      padding: 2px 8px;
+      padding: 4px 10px;
       border-radius: 999px;
       font-size: 0.72rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      background: #f1f5f9;
+      color: var(--text-secondary);
     }
 
-    /* Top navigation inside admin panel */
-    .nav {
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 4px 0 20px;
-      padding: 4px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(148, 163, 184, 0.5);
-    }
-
-    .nav-item {
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      box-shadow: none;
-      cursor: pointer;
-      display: inline-flex;
+    /* Login screen */
+    .login-wrapper {
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+      padding: 24px;
     }
 
-    .nav-item span.dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: rgba(148, 163, 184, 0.7);
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      border: 1px solid var(--card-border);
     }
 
-    .nav-item.active {
-      background: linear-gradient(135deg, rgba(212, 168, 83, 0.16), rgba(56, 189, 248, 0.1));
-      color: var(--text-main);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
-    }
+    .login-box h1 { font-size: 1.35rem; margin-bottom: 4px; }
+    .login-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 24px; }
 
-    .nav-item.active span.dot {
-      background: var(--primary);
-      box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.35);
+    @media (max-width: 900px) {
+      .sidebar { width: 72px; min-width: 72px; padding: 0; }
+      .sidebar-header .sidebar-title,
+      .sidebar-header .sidebar-subtitle,
+      .nav-link span:not(.nav-icon),
+      .nav-section { display: none; }
+      .sidebar-header { justify-content: center; padding: 20px 12px; }
+      .nav-link { justify-content: center; padding: 14px; }
+      .main { margin-left: 72px; }
     }
   </style>
 </head>
@@ -383,678 +409,568 @@
 <body>
   <div id="loginScreen" class="login-wrapper">
     <div class="login-box">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="topbar-logo">S</div>
-          <div>
-            <h1>Admin Console</h1>
-            <div class="login-subtitle">Secure access to Scratch Rewards configuration</div>
-          </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <div class="sidebar-logo">S</div>
+        <div>
+          <h1>Admin Console</h1>
+          <div class="login-subtitle">Scratch Rewards configuration</div>
         </div>
-        <span class="pill">Protected</span>
       </div>
       <label>Password</label>
-      <input type="password" id="adminPassword" placeholder="Enter admin password" />
-      <button type="button" onclick="doLogin()">Login</button>
+      <input type="password" id="adminPassword" placeholder="Enter admin password" style="max-width:100%;" />
+      <button type="button" onclick="doLogin()" style="margin-top:16px;">Login</button>
       <p id="loginErr" class="msg err" style="display:none;"></p>
     </div>
   </div>
 
   <div id="adminPanel" style="display:none;">
-    <div class="shell">
-      <div class="topbar">
-        <div class="topbar-title">
-          <div class="topbar-logo">S</div>
-          <div>
-            <h1>Scratch Rewards · Admin</h1>
-            <div class="small">Live configuration for mobile app — theme, content & feature cards</div>
-          </div>
-        </div>
-        <span class="badge">
-          <span
-            style="width:8px;height:8px;border-radius:999px;background:#22C55E;box-shadow:0 0 0 4px rgba(34,197,94,0.28);"></span>
-          Connected
-        </span>
-      </div>
-
-      <div class="nav">
-        <button type="button" class="nav-item active" data-tab="design" onclick="switchTab('design')">
-          <span class="dot"></span> Design
-        </button>
-        <button type="button" class="nav-item" data-tab="content" onclick="switchTab('content')">
-          <span class="dot"></span> Text & Strings
-        </button>
-        <button type="button" class="nav-item" data-tab="cards" onclick="switchTab('cards')">
-          <span class="dot"></span> Home Feature Cards
-        </button>
-        <button type="button" class="nav-item" data-tab="users" onclick="switchTab('users')">
-          <span class="dot"></span> Users
-        </button>
-        <button type="button" class="nav-item" data-tab="rewards" onclick="switchTab('rewards')">
-          <span class="dot"></span> Rewards & Coupons
-        </button>
-        <button type="button" class="nav-item" data-tab="leaderboard" onclick="switchTab('leaderboard')">
-          <span class="dot"></span> Referrals & Leaderboard
-        </button>
-        <button type="button" class="nav-item" data-tab="settings" onclick="switchTab('settings')">
-          <span class="dot"></span> Settings & Security
-        </button>
-      </div>
-
-      <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">S</div>
         <div>
-          <div class="card section" id="section-theme">
-            <div class="section-label">Theme</div>
-            <h2>Colors</h2>
-            <p class="card-subtitle">Instantly update primary palette for the mobile app UI.</p>
+          <div class="sidebar-title">Scratch Rewards</div>
+          <div class="sidebar-subtitle">Admin Panel</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">Appearance</div>
+        <button type="button" class="nav-link active" data-tab="design" onclick="switchTab('design')">
+          <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg></span>
+          <span>Design & Theme</span>
+        </button>
+        <button type="button" class="nav-link" data-tab="scratch" onclick="switchTab('scratch')">
+          <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></span>
+          <span>Scratch Card</span>
+        </button>
+        <button type="button" class="nav-link" data-tab="content" onclick="switchTab('content')">
+          <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg></span>
+          <span>Text & Strings</span>
+        </button>
+        <button type="button" class="nav-link" data-tab="cards" onclick="switchTab('cards')">
+          <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V5a2 2 0 00-2-2M5 11V5a2 2 0 012-2m0 0V5h14v0M5 11v6m14-6v6"/></svg></span>
+          <span>Feature Cards</span>
+        </button>
+        <div class="nav-section">Management</div>
+        <button type="button" class="nav-link" data-tab="users" onclick="switchTab('users')">
+          <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg></span>
+          <span>Users</span>
+        </button>
+        <button type="button" class="nav-link" data-tab="rewards" onclick="switchTab('rewards')">
+          <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+          <span>Rewards & Coupons</span>
+        </button>
+        <button type="button" class="nav-link" data-tab="leaderboard" onclick="switchTab('leaderboard')">
+          <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></span>
+          <span>Referrals & Leaderboard</span>
+        </button>
+        <button type="button" class="nav-link" data-tab="settings" onclick="switchTab('settings')">
+          <span class="nav-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>
+          <span>Settings & Security</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="status-dot"></span> Connected
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="main-header">
+        <h1 class="main-title" id="pageHeading">Design & Theme</h1>
+      </header>
+      <div class="main-content">
+        <div id="page-design" class="page active">
+          <div class="card">
+            <h2>Theme colors</h2>
+            <p class="card-subtitle">Primary palette for the mobile app. Changes apply on next app load.</p>
             <div class="row">
-              <div><label>Primary <span class="color-preview" id="prevPrimary"></span></label><input type="color"
-                  id="theme.primary" value="#D4A853" /></div>
-              <div><label>Primary Dark <span class="color-preview" id="prevPrimaryDark"></span></label><input
-                  type="color" id="theme.primaryDark" value="#B8923F" /></div>
-              <div><label>Accent <span class="color-preview" id="prevAccent"></span></label><input type="color"
-                  id="theme.accent" value="#D4A853" /></div>
-              <div><label>Background <span class="color-preview" id="prevBackground"></span></label><input type="color"
-                  id="theme.background" value="#F5F5F5" /></div>
-              <div><label>Surface <span class="color-preview" id="prevSurface"></span></label><input type="color"
-                  id="theme.surface" value="#FFFFFF" /></div>
-              <div><label>Success <span class="color-preview" id="prevSuccess"></span></label><input type="color"
-                  id="theme.success" value="#34C759" /></div>
+              <div><label>Primary <span class="color-preview" id="prevPrimary"></span></label><input type="color" id="theme.primary" value="#D4A853" /></div>
+              <div><label>Primary Dark <span class="color-preview" id="prevPrimaryDark"></span></label><input type="color" id="theme.primaryDark" value="#B8923F" /></div>
+              <div><label>Accent <span class="color-preview" id="prevAccent"></span></label><input type="color" id="theme.accent" value="#D4A853" /></div>
+              <div><label>Background <span class="color-preview" id="prevBackground"></span></label><input type="color" id="theme.background" value="#F5F5F5" /></div>
+              <div><label>Surface <span class="color-preview" id="prevSurface"></span></label><input type="color" id="theme.surface" value="#FFFFFF" /></div>
+              <div><label>Success <span class="color-preview" id="prevSuccess"></span></label><input type="color" id="theme.success" value="#34C759" /></div>
             </div>
-            <button onclick="saveConfig()">Save Colors</button>
+            <button onclick="saveConfig()">Save colors</button>
             <span id="colorMsg"></span>
           </div>
-
-          <div class="card section" id="section-brand">
-            <div class="section-label">Brand</div>
+          <div class="card">
             <h2>Logo</h2>
-            <p class="card-subtitle">Update the logo used across the mobile experience.</p>
-            <label>Logo URL (ya upload karo)</label>
+            <p class="card-subtitle">URL or upload. Used in app header.</p>
+            <label>Logo URL</label>
             <div class="row">
-              <input type="text" id="logoUrl" placeholder="https://... ya /api/uploads/filename" style="flex:1;" />
-              <button type="button" class="secondary"
-                onclick="document.getElementById('logoFile').click()">Upload</button>
+              <input type="text" id="logoUrl" placeholder="https://... or /api/uploads/..." style="flex:1; max-width:100%;" />
+              <button type="button" class="secondary" onclick="document.getElementById('logoFile').click()">Upload</button>
               <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="uploadLogo(this)" />
             </div>
-            <button onclick="saveLogoUrl()">Save Logo URL</button>
+            <button onclick="saveLogoUrl()">Save logo URL</button>
             <span id="logoMsg"></span>
           </div>
         </div>
 
-        <div>
-          <div class="card section" id="section-strings">
-            <div class="section-label">Content</div>
-            <h2>App Text (Strings)</h2>
-            <p class="card-subtitle">Update all user-facing labels like app name, buttons and sections.</p>
+        <div id="page-scratch" class="page">
+          <div class="card">
+            <h2>Scratch card watermark</h2>
+            <p class="card-subtitle">Yeh text scratch card par overlay pe left se right, multiple times dikhega. App me scratch card open karte hi watermark yahi se aayega.</p>
+            <label>Watermark text</label>
+            <input type="text" id="scratchWatermarkInput" placeholder="e.g. Scratch Rewards" style="max-width:400px;" />
+            <button onclick="saveScratchWatermark()">Save watermark</button>
+            <span id="scratchMsg"></span>
+          </div>
+        </div>
+
+        <div id="page-content" class="page">
+          <div class="card">
+            <h2>App text (strings)</h2>
+            <p class="card-subtitle">User-facing labels: app name, buttons, sections.</p>
             <div id="stringsList"></div>
-            <button onclick="saveStrings()">Save All Text</button>
+            <button onclick="saveStrings()">Save all text</button>
             <span id="stringsMsg"></span>
           </div>
+        </div>
 
-          <div class="card section" id="section-cards">
-            <div class="section-label">Home</div>
-            <h2>Feature Cards</h2>
-            <p class="card-subtitle">Control the promotional cards on the home screen (title, description, AD badge &
-              target screen).</p>
-            <div class="card section" id="section-cards">
-              <div class="section-label">Home</div>
-              <h2>Feature Cards</h2>
-              <p class="card-subtitle">Control the promotional cards on the home screen (title, description, AD badge &
-                target screen).</p>
+        <div id="page-cards" class="page">
+          <div class="card">
+            <h2>Home feature cards</h2>
+            <p class="card-subtitle">Promotional cards on home screen (title, description, AD badge, link).</p>
+            <div style="overflow-x:auto;">
               <table>
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Gradient</th>
-                    <th>AD</th>
-                    <th>Link</th>
-                    <th></th>
+                    <th>#</th><th>Title</th><th>Description</th><th>Gradient</th><th>AD</th><th>Link</th><th></th>
                   </tr>
                 </thead>
                 <tbody id="cardsTable"></tbody>
               </table>
-              <button onclick="addCard()">+ Add Card</button>
-              <span id="cardsMsg"></span>
+            </div>
+            <button onclick="addCard()">+ Add card</button>
+            <span id="cardsMsg"></span>
+          </div>
+        </div>
+
+        <div id="page-users" class="page">
+          <div class="card">
+            <h2>Users</h2>
+            <p class="card-subtitle">Diamonds, XP, block status.</p>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID / Email / Phone</th><th>Code</th><th>Diamonds</th><th>XP</th><th>Refs</th><th>Status</th><th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTable"></tbody>
+              </table>
+            </div>
+            <span id="usersMsg"></span>
+          </div>
+        </div>
+
+        <div id="page-rewards" class="page">
+          <div class="card">
+            <h2>Payout requests</h2>
+            <p class="card-subtitle">Approve or reject user redemption requests.</p>
+            <div style="overflow-x:auto; margin-bottom:24px;">
+              <table>
+                <thead>
+                  <tr><th>Date</th><th>User</th><th>Coupon</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="requestsTable"></tbody>
+              </table>
+            </div>
+            <span id="reqMsg"></span>
+          </div>
+          <div class="card">
+            <h2>Coupons</h2>
+            <p class="card-subtitle">Items in app store.</p>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Title</th><th>Description</th><th>Category</th><th>Amount</th><th>Image</th><th>💎 Cost</th><th>XP</th><th>Active</th><th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="couponsTable"></tbody>
+              </table>
+            </div>
+            <button onclick="addCoupon()">+ Add coupon</button>
+            <span id="couponsMsg"></span>
+          </div>
+        </div>
+
+        <div id="page-leaderboard" class="page">
+          <div class="card">
+            <h2>Referral tracking</h2>
+            <p class="card-subtitle">Who invited whom and top referrers.</p>
+            <div style="overflow-x:auto; margin-bottom:24px;">
+              <table>
+                <thead>
+                  <tr><th>User</th><th>Ref code</th><th>Referred by</th><th>Total refs</th></tr>
+                </thead>
+                <tbody id="referralsTable"></tbody>
+              </table>
             </div>
           </div>
+          <div class="card">
+            <h2>Reset leaderboard</h2>
+            <p class="card-subtitle">Set all users’ XP to 0 for a new season.</p>
+            <button class="secondary danger" onclick="resetLeaderboard()">⚠️ Reset all XP to 0</button>
+            <span id="lbMsg"></span>
+          </div>
+        </div>
 
-          <!-- NEW SECTIONS -->
-          <div style="grid-column: 1 / -1;">
-            <div class="card section" id="section-users" style="display:none;">
-              <div class="section-label">User Management</div>
-              <h2>All Users</h2>
-              <p class="card-subtitle">Manage diamonds, XP, and block suspicious accounts.</p>
-              <div style="overflow-x:auto;">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>ID/Email/Phone</th>
-                      <th>Code</th>
-                      <th>Diamonds</th>
-                      <th>XP</th>
-                      <th>Refs</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="usersTable"></tbody>
-                </table>
+        <div id="page-settings" class="page">
+          <div class="card">
+            <h2>Maintenance mode</h2>
+            <p class="card-subtitle">Block all app access temporarily.</p>
+            <div class="row">
+              <div>
+                <label>Status</label>
+                <select id="app.maintenance_mode">
+                  <option value="0">OFF (Live)</option>
+                  <option value="1">ON (Maintenance)</option>
+                </select>
               </div>
-              <span id="usersMsg"></span>
+              <button onclick="saveMaintenance()">Save</button>
+              <span id="maintMsg"></span>
             </div>
-
-            <div class="card section" id="section-rewards" style="display:none;">
-              <div class="section-label">Rewards Control</div>
-              <h2>Payout Requests</h2>
-              <p class="card-subtitle">Approve or reject user payout requests.</p>
-              <div style="overflow-x:auto; margin-bottom: 24px;">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>User</th>
-                      <th>Coupon</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="requestsTable"></tbody>
-                </table>
-                <span id="reqMsg"></span>
-              </div>
-
-              <h2>Available Coupons</h2>
-              <p class="card-subtitle">Manage items available in the App Store.</p>
-              <div style="overflow-x:auto;">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Description</th>
-                      <th>Category</th>
-                      <th>Amount</th>
-                      <th>Image</th>
-                      <th>💎 Cost</th>
-                      <th>XP Cost</th>
-                      <th>Active</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="couponsTable"></tbody>
-                </table>
-              </div>
-              <button onclick="addCoupon()">+ Add Coupon</button>
-              <span id="couponsMsg"></span>
+          </div>
+          <div class="card">
+            <h2>Home layout order</h2>
+            <p class="card-subtitle">Comma-separated: task, scratch, refer, wheel, comeback</p>
+            <div class="row">
+              <div><label>Order</label><input type="text" id="home.layout_order" value="task,scratch,refer,comeback,wheel" style="max-width:400px;" /></div>
+              <button onclick="saveHomeOrder()">Save order</button>
+              <span id="orderMsg"></span>
             </div>
-
-            <div class="card section" id="section-leaderboard" style="display:none;">
-              <div class="section-label">Referrals</div>
-              <h2>Referral Tracking</h2>
-              <p class="card-subtitle">See who invited whom and top referrers.</p>
-              <div style="overflow-x:auto; margin-bottom: 24px;">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>User (ID / Contact)</th>
-                      <th>Ref Code</th>
-                      <th>Referred By</th>
-                      <th>Total Refs</th>
-                    </tr>
-                  </thead>
-                  <tbody id="referralsTable"></tbody>
-                </table>
-              </div>
-
-              <div class="section-label">Leaderboard</div>
-              <h2>Reset Leaderboard</h2>
-              <p class="card-subtitle">Reset all XP to 0 for a fresh season.</p>
-              <button class="secondary" onclick="resetLeaderboard()"
-                style="color: var(--danger-text); border-color: var(--danger-text);">⚠️ Reset All XP to 0</button>
-              <span id="lbMsg"></span>
+          </div>
+          <div class="card">
+            <h2>Task configuration</h2>
+            <p class="card-subtitle">Daily limits and rewards for ads/scratch.</p>
+            <div class="row">
+              <div><label>Daily task limit</label><input type="number" id="task.daily_limit" value="4" /></div>
+              <div><label>Diamonds reward</label><input type="number" id="task.reward_diamonds" value="10" /></div>
+              <div><label>Coins reward</label><input type="number" id="task.reward_coins" value="50" /></div>
+              <div><label>Reward code</label><input type="text" id="task.reward_code" value="WINNER2024" /></div>
+              <button onclick="saveTaskConfigs()">Save</button>
+              <span id="taskConfMsg"></span>
             </div>
-
-            <div class="card section" id="section-settings" style="display:none;">
-              <div class="section-label">Global Settings & Security</div>
-
-              <h2>App Maintenance Mode</h2>
-              <p class="card-subtitle">Block all app access temporarily.</p>
-              <div class="row" style="margin-bottom: 24px;">
-                <div>
-                  <label>Maintenance Mode <span id="prevMaintenance" class="color-preview"
-                      style="border-radius:4px; width:16px; height:16px;"></span></label>
-                  <select id="app.maintenance_mode"
-                    style="width:100%; max-width:200px; padding:9px 11px; margin-top:4px; border-radius:10px; background:rgba(15,23,42,0.95); color:#fff; border:1px solid rgba(148,163,184,0.6);">
-                    <option value="0">OFF (Live)</option>
-                    <option value="1">ON (Maintenance)</option>
-                  </select>
-                </div>
-                <button onclick="saveMaintenance()">Save Status</button>
-                <span id="maintMsg"></span>
-              </div>
-
-              <h2>Home Layout Order</h2>
-              <p class="card-subtitle">Order of fixed cards. Format: task,scratch,refer,wheel,comeback</p>
-              <div class="row" style="margin-bottom: 24px;">
-                <div><label>Order (comma separated)</label><input type="text" id="home.layout_order"
-                    value="task,scratch,refer,comeback,wheel" style="width:100%;" /></div>
-                <button onclick="saveHomeOrder()">Save Order</button>
-                <span id="orderMsg"></span>
-              </div>
-
-              <h2>Task Configurations</h2>
-              <p class="card-subtitle">Set limits and rewards for daily scratch/ads.</p>
-              <div class="row" style="margin-bottom: 24px;">
-                <div><label>Daily Task Limit (e.g. Ads</label><input type="number" id="task.daily_limit" value="4" />
-                </div>
-                <div><label>Diamonds Reward</label><input type="number" id="task.reward_diamonds" value="10" /></div>
-                <div><label>Coins Reward</label><input type="number" id="task.reward_coins" value="50" /></div>
-                <div><label>Reward Code</label><input type="text" id="task.reward_code" value="WINNER2024" /></div>
-                <button onclick="saveTaskConfigs()">Save Configs</button>
-                <span id="taskConfMsg"></span>
-              </div>
-
-              <h2>Security: Fraud Alerts</h2>
-              <p class="card-subtitle">Users with abnormally high daily activity (Today).</p>
-              <div style="overflow-x:auto;">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Diamonds</th>
-                      <th>Ads Watched</th>
-                      <th>Scratch Used</th>
-                    </tr>
-                  </thead>
-                  <tbody id="fraudTable"></tbody>
-                </table>
-              </div>
+          </div>
+          <div class="card">
+            <h2>Fraud alerts</h2>
+            <p class="card-subtitle">Unusual activity today.</p>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr><th>User</th><th>Diamonds</th><th>Ads watched</th><th>Scratch used</th></tr>
+                </thead>
+                <tbody id="fraudTable"></tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <script>
-      const API = '/api';
-      const ADMIN = '/admin/api';
-      let token = '';
+  <script>
+    const ADMIN = '/admin/api';
+    let token = '';
 
-      function getToken() {
-        token = sessionStorage.getItem('adminToken') || '';
-        return token;
-      }
-      function setToken(t) {
-        token = t;
-        sessionStorage.setItem('adminToken', t);
-      }
+    function getToken() { token = sessionStorage.getItem('adminToken') || ''; return token; }
+    function setToken(t) { token = t; sessionStorage.setItem('adminToken', t); }
 
-      function doLogin() {
-        const pwd = document.getElementById('adminPassword').value;
-        const errEl = document.getElementById('loginErr');
-        if (!pwd) { errEl.textContent = 'Password daalo'; errEl.style.display = 'block'; return; }
-        setToken(pwd);
-        fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
-          .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'block'; loadAll(); } else throw new Error('Wrong password'); })
-          .catch(e => { errEl.textContent = e.message || 'Login failed'; errEl.style.display = 'block'; });
-      }
+    const pageTitles = {
+      design: 'Design & Theme',
+      scratch: 'Scratch Card',
+      content: 'Text & Strings',
+      cards: 'Feature Cards',
+      users: 'Users',
+      rewards: 'Rewards & Coupons',
+      leaderboard: 'Referrals & Leaderboard',
+      settings: 'Settings & Security'
+    };
 
-      if (getToken()) {
-        fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
-          .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'block'; loadAll(); } else setToken(''); });
-      }
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-link').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      document.querySelectorAll('.page').forEach(p => {
+        p.classList.toggle('active', p.id === 'page-' + tab);
+      });
+      document.getElementById('pageHeading').textContent = pageTitles[tab] || tab;
+    }
 
-      function loadAll() {
-        fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json())
-          .then(data => {
-            Object.entries(data).forEach(([k, v]) => {
-              const el = document.getElementById(k);
-              if (el && (el.type === 'color' || el.type === 'text' || el.type === 'number')) el.value = v || el.value;
-            });
-            updateColorPreviews();
-            const strKeys = Object.keys(data).filter(x => x.startsWith('strings.'));
-            let html = '';
-            strKeys.forEach(key => {
-              const short = key.replace('strings.', '');
-              html += '<div class="row"><div><label>' + short + '</label><input type="text" id="' + key + '" value="' + (data[key] || '').replace(/"/g, '&quot;') + '" /></div></div>';
-            });
-            if (!strKeys.length) {
-              ['app_name', 'phone', 'login', 'home', 'wallet', 'profile', 'leaderboard', 'store', 'send_otp', 'watch_ad', 'scratch_card', 'tap_to_scratch', 'copy_link', 'claim'].forEach(k => {
-                html += '<div class="row"><div><label>strings.' + k + '</label><input type="text" id="strings.' + k + '" value="" /></div></div>';
-              });
-            }
-            document.getElementById('stringsList').innerHTML = html || '<p>No strings in config. Add keys like strings.app_name</p>';
+    function doLogin() {
+      const pwd = document.getElementById('adminPassword').value;
+      const errEl = document.getElementById('loginErr');
+      if (!pwd) { errEl.textContent = 'Password daalo'; errEl.style.display = 'block'; return; }
+      setToken(pwd);
+      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'flex'; loadAll(); } else throw new Error('Wrong password'); })
+        .catch(e => { errEl.textContent = e.message || 'Login failed'; errEl.style.display = 'block'; });
+    }
+
+    if (getToken()) {
+      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => { if (r.ok) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('adminPanel').style.display = 'flex'; loadAll(); } else setToken(''); });
+    }
+
+    function loadAll() {
+      fetch(ADMIN + '/config', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => { if (!r.ok) throw new Error('Config load failed'); return r.json(); })
+        .then(data => {
+          Object.entries(data).forEach(([k, v]) => {
+            const el = document.getElementById(k);
+            if (!el) return;
+            const val = v != null ? String(v) : '';
+            if (el.type === 'color' || el.type === 'text' || el.type === 'number') el.value = val;
+            else if (el.tagName === 'SELECT') el.value = val;
           });
+          var scratchEl = document.getElementById('scratchWatermarkInput');
+          if (scratchEl && data['strings.scratch_card'] != null) scratchEl.value = data['strings.scratch_card'];
+          updateColorPreviews();
+          var strKeys = Object.keys(data).filter(x => x.startsWith('strings.') && x !== 'strings.scratch_card');
+          var html = '';
+          strKeys.forEach(function(key) {
+            var short = key.replace('strings.', '');
+            html += '<div class="row"><div><label>' + short + '</label><input type="text" id="' + key + '" value="' + (data[key] || '').replace(/"/g, '&quot;') + '" /></div></div>';
+          });
+          if (!strKeys.length) {
+            ['app_name', 'phone', 'login', 'home', 'wallet', 'profile', 'leaderboard', 'store', 'send_otp', 'watch_ad', 'tap_to_scratch', 'copy_link', 'claim'].forEach(function(k) {
+              html += '<div class="row"><div><label>strings.' + k + '</label><input type="text" id="strings.' + k + '" value="" /></div></div>';
+            });
+          }
+          var listEl = document.getElementById('stringsList');
+          if (listEl) listEl.innerHTML = html || '<p>No strings in config.</p>';
+        })
+        .catch(function(e) { console.error('Load config error', e); });
 
-        fetch(ADMIN + '/feature-cards', { headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json())
-          .then(cards => {
-            const tbody = document.getElementById('cardsTable');
-            tbody.innerHTML = cards.map(c => `
+      fetch(ADMIN + '/feature-cards', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(cards => {
+          const tbody = document.getElementById('cardsTable');
+          if (tbody) tbody.innerHTML = cards.map(c => `
             <tr data-id="${c.id}">
               <td>${c.sort_order}</td>
-              <td><input type="text" data-field="title" value="${(c.title || '').replace(/"/g, '&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #ddd;padding:4px;" /></td>
-              <td><input type="text" data-field="description" value="${(c.description || '').replace(/"/g, '&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #ddd;padding:4px;" /></td>
-              <td><input type="number" data-field="gradientId" min="1" max="5" value="${c.gradient_id}" onchange="saveCardRow(${c.id})" style="width:50px;" /></td>
+              <td><input type="text" data-field="title" value="${(c.title || '').replace(/"/g, '&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #e2e8f0;padding:6px;border-radius:6px;" /></td>
+              <td><input type="text" data-field="description" value="${(c.description || '').replace(/"/g, '&quot;')}" onchange="saveCardRow(${c.id})" style="width:100%;border:1px solid #e2e8f0;padding:6px;border-radius:6px;" /></td>
+              <td><input type="number" data-field="gradientId" min="1" max="5" value="${c.gradient_id}" onchange="saveCardRow(${c.id})" style="width:50px;padding:6px;" /></td>
               <td><input type="checkbox" data-field="showAd" ${c.show_ad ? 'checked' : ''} onchange="saveCardRow(${c.id})" /></td>
-              <td><input type="text" data-field="linkType" value="${(c.link_type || '').replace(/"/g, '&quot;')}" onchange="saveCardRow(${c.id})" placeholder="scratch|rewards" style="width:80px;" /></td>
-              <td><button onclick="deleteCard(${c.id})">Delete</button></td>
+              <td><input type="text" data-field="linkType" value="${(c.link_type || '').replace(/"/g, '&quot;')}" onchange="saveCardRow(${c.id})" placeholder="scratch|rewards" style="width:90px;padding:6px;" /></td>
+              <td><button type="button" onclick="deleteCard(${c.id})" class="secondary" style="padding:6px 12px;font-size:0.8rem;">Delete</button></td>
             </tr>
           `).join('');
-          });
+        });
 
-        // Load Users
-        fetch(ADMIN + '/users', { headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json())
-          .then(users => {
-            document.getElementById('usersTable').innerHTML = users.map(u => `
+      fetch(ADMIN + '/users', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(users => {
+          const tbody = document.getElementById('usersTable');
+          if (tbody) tbody.innerHTML = users.map(u => `
             <tr data-user="${u.id}">
-              <td>
-                <div style="font-size:0.8rem; font-weight:bold;">${u.email || u.phone || u.id}</div>
-                <div style="font-size:0.7rem; color:gray;">Joined: ${new Date(u.created_at).toLocaleDateString()}</div>
-              </td>
+              <td><div style="font-weight:600;">${u.email || u.phone || u.id}</div><div style="font-size:0.8rem;color:var(--text-secondary);">${new Date(u.created_at).toLocaleDateString()}</div></td>
               <td>${u.ref_code}</td>
-              <td><input type="number" data-field="diamonds" value="${u.diamonds}" style="width:70px; padding:4px;" /></td>
-              <td><input type="number" data-field="xp" value="${u.xp}" style="width:70px; padding:4px;" /></td>
+              <td><input type="number" data-field="diamonds" value="${u.diamonds}" style="width:70px;padding:6px;" /></td>
+              <td><input type="number" data-field="xp" value="${u.xp}" style="width:70px;padding:6px;" /></td>
               <td>${u.referral_count}</td>
-              <td>
-                <select data-field="is_blocked" style="padding:4px; font-size:0.8rem;">
-                  <option value="0" ${!u.is_blocked ? 'selected' : ''}>Active</option>
-                  <option value="1" ${u.is_blocked ? 'selected' : ''}>Blocked</option>
-                </select>
-              </td>
-              <td><button onclick="saveUser('${u.id}')" style="padding:4px 8px; font-size:0.75rem;">Save</button></td>
+              <td><select data-field="is_blocked" style="padding:6px;"><option value="0" ${!u.is_blocked ? 'selected' : ''}>Active</option><option value="1" ${u.is_blocked ? 'selected' : ''}>Blocked</option></select></td>
+              <td><button type="button" onclick="saveUser('${u.id}')" style="padding:6px 12px;font-size:0.8rem;">Save</button></td>
             </tr>
           `).join('');
-          });
+        });
 
-        // Load Referrals
-        fetch(ADMIN + '/referrals', { headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json())
-          .then(refs => {
-            document.getElementById('referralsTable').innerHTML = refs.length ? refs.map(r => `
-            <tr>
-              <td>${r.email || r.phone || r.id}</td>
-              <td><span class="pill">${r.ref_code}</span></td>
-              <td>${r.referred_by || '-'}</td>
-              <td><strong>${r.referral_count}</strong></td>
-            </tr>
+      fetch(ADMIN + '/referrals', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(refs => {
+          const tbody = document.getElementById('referralsTable');
+          if (tbody) tbody.innerHTML = refs.length ? refs.map(r => `
+            <tr><td>${r.email || r.phone || r.id}</td><td><span class="pill">${r.ref_code}</span></td><td>${r.referred_by || '-'}</td><td><strong>${r.referral_count}</strong></td></tr>
           `).join('') : '<tr><td colspan="4">No referral data yet.</td></tr>';
-          });
-
-        // Load Fraud Alerts
-        fetch(ADMIN + '/fraud-alerts', { headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json())
-          .then(alerts => {
-            document.getElementById('fraudTable').innerHTML = alerts.length ? alerts.map(a => `
-            <tr style="background: rgba(185,28,28,0.1);">
-              <td>${a.email || a.phone || a.id}</td>
-              <td>${a.diamonds}</td>
-              <td>${a.ads_watched}</td>
-              <td>${a.scratch_used}</td>
-            </tr>
-          `).join('') : '<tr><td colspan="4">✅ No suspicious activity today.</td></tr>';
-          });
-
-        // Load Coupons & Requests
-        loadRewards();
-      }
-
-      function updateColorPreviews() {
-        ['primary', 'primaryDark', 'accent', 'background', 'surface', 'success'].forEach(name => {
-          const el = document.getElementById('theme.' + name);
-          if (el) document.getElementById('prev' + name.charAt(0).toUpperCase() + name.slice(1)).style.background = el.value;
-        });
-      }
-      document.addEventListener('input', e => { if (e.target.id && e.target.id.startsWith('theme.')) updateColorPreviews(); });
-
-      function saveConfig() {
-        const payload = {};
-        ['theme.primary', 'theme.primaryDark', 'theme.accent', 'theme.background', 'theme.surface', 'theme.success'].forEach(k => {
-          const el = document.getElementById(k);
-          if (el) payload[k] = el.value;
-        });
-        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
-          .then(r => r.json()).then(() => { document.getElementById('colorMsg').textContent = ' Saved.'; document.getElementById('colorMsg').className = 'msg ok'; })
-          .catch(() => { document.getElementById('colorMsg').textContent = ' Error'; document.getElementById('colorMsg').className = 'msg err'; });
-      }
-
-      function saveLogoUrl() {
-        const url = document.getElementById('logoUrl').value.trim();
-        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'logo.url': url }) })
-          .then(r => r.json()).then(() => { document.getElementById('logoMsg').textContent = ' Saved.'; document.getElementById('logoMsg').className = 'msg ok'; });
-      }
-
-      function uploadLogo(input) {
-        if (!input.files.length) return;
-        const fd = new FormData();
-        fd.append('logo', input.files[0]);
-        fetch(ADMIN + '/logo', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd })
-          .then(r => r.json())
-          .then(data => { document.getElementById('logoUrl').value = data.url || ''; document.getElementById('logoMsg').textContent = ' Uploaded. Save URL if needed.'; document.getElementById('logoMsg').className = 'msg ok'; })
-          .catch(() => { document.getElementById('logoMsg').textContent = ' Upload failed'; document.getElementById('logoMsg').className = 'msg err'; });
-      }
-
-      function saveStrings() {
-        const payload = {};
-        document.querySelectorAll('#stringsList input[id^="strings."]').forEach(el => { payload[el.id] = el.value; });
-        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
-          .then(r => r.json()).then(() => { document.getElementById('stringsMsg').textContent = ' Saved.'; document.getElementById('stringsMsg').className = 'msg ok'; });
-      }
-
-      function saveCardRow(id) {
-        const row = document.querySelector('tr[data-id="' + id + '"]');
-        if (!row) return;
-        const get = (f) => {
-          const el = row.querySelector('[data-field="' + f + '"]');
-          if (!el) return null;
-          if (el.type === 'checkbox') return el.checked;
-          return el.value;
-        };
-        fetch(ADMIN + '/feature-cards/' + id, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({
-            title: get('title'),
-            description: get('description'),
-            gradientId: parseInt(get('gradientId') || 1, 10),
-            showAd: get('showAd'),
-            linkType: get('linkType') || null
-          })
-        }).then(r => r.json()).then(() => { document.getElementById('cardsMsg').textContent = ' Card updated.'; document.getElementById('cardsMsg').className = 'msg ok'; });
-      }
-
-      function addCard() {
-        fetch(ADMIN + '/feature-cards', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ title: 'New Card', description: '', gradientId: 1, showAd: false, sortOrder: 99 })
-        }).then(r => r.json()).then(() => loadAll());
-      }
-
-      function deleteCard(id) {
-        if (!confirm('Delete this card?')) return;
-        fetch(ADMIN + '/feature-cards/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json()).then(() => loadAll());
-      }
-
-      // --- NEW ADMIN FUNCTIONS ---
-
-      function saveUser(id) {
-        const row = document.querySelector(`tr[data-user="${id}"]`);
-        if (!row) return;
-        const diamonds = row.querySelector('[data-field="diamonds"]').value;
-        const xp = row.querySelector('[data-field="xp"]').value;
-        const is_blocked = row.querySelector('[data-field="is_blocked"]').value === "1";
-
-        fetch(ADMIN + '/users/' + id, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ diamonds, xp, is_blocked })
-        }).then(r => r.json()).then(() => {
-          const msg = document.getElementById('usersMsg');
-          msg.textContent = 'User ' + id + ' saved.';
-          msg.className = 'msg ok';
-          setTimeout(() => msg.textContent = '', 3000);
-        });
-      }
-
-      function loadRewards() {
-        // Requests
-        fetch(ADMIN + '/reward-requests', { headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json())
-          .then(reqs => {
-            document.getElementById('requestsTable').innerHTML = reqs.length ? reqs.map(r => `
-          <tr>
-            <td>${new Date(r.requested_at).toLocaleString()}</td>
-            <td><div style="font-size:0.8rem;">${r.email || r.phone || r.user_id}</div></td>
-            <td>${r.title}</td>
-            <td>
-              <span class="pill" style="background:${r.status === 'APPROVED' ? '#166534' : (r.status === 'REJECTED' ? '#991b1b' : '#b45309')}">
-                ${r.status}
-              </span>
-            </td>
-            <td>
-              ${r.status === 'PENDING' ? `
-                <button onclick="processRequest(${r.id}, 'APPROVED')" style="padding:4px 8px; font-size:0.75rem; background:var(--success-bg); color:var(--success-text);">Approve</button>
-                <button onclick="processRequest(${r.id}, 'REJECTED')" style="padding:4px 8px; font-size:0.75rem; background:var(--danger-bg); color:var(--danger-text);">Reject</button>
-              ` : '-'}
-            </td>
-          </tr>
-        `).join('') : '<tr><td colspan="5">No pending requests.</td></tr>';
-          });
-
-        // Coupons
-        fetch(ADMIN + '/coupons', { headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json())
-          .then(coupons => {
-            document.getElementById('couponsTable').innerHTML = coupons.map(c => `
-          <tr data-coupon="${c.id}">
-            <td><input type="text" data-field="title" value="${(c.title || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:100px; padding:4px;" /></td>
-            <td><input type="text" data-field="description" value="${(c.description || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:100px; padding:4px;" /></td>
-            <td><input type="text" data-field="category" value="${(c.category || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:80px; padding:4px;" /></td>
-            <td><input type="number" data-field="amount" value="${c.amount || 0}" onchange="saveCouponRow(${c.id})" style="width:60px; padding:4px;" /></td>
-            <td><input type="text" data-field="image_url" value="${(c.image_url || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:70px; padding:4px;" /></td>
-            <td><input type="number" data-field="cost_diamonds" value="${c.cost_diamonds}" onchange="saveCouponRow(${c.id})" style="width:60px; padding:4px;" /></td>
-            <td><input type="number" data-field="cost_xp" value="${c.cost_xp}" onchange="saveCouponRow(${c.id})" style="width:50px; padding:4px;" /></td>
-            <td><input type="checkbox" data-field="is_active" ${c.is_active ? 'checked' : ''} onchange="saveCouponRow(${c.id})" /></td>
-            <td><button onclick="deleteCoupon(${c.id})" style="padding:4px 8px; font-size:0.7rem;">Del</button></td>
-          </tr>
-        `).join('');
-          });
-      }
-
-      function processRequest(id, status) {
-        if (!confirm(`Mark request as ${status}?`)) return;
-        fetch(ADMIN + '/reward-requests/' + id, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ status })
-        }).then(r => r.json()).then(() => loadRewards());
-      }
-
-      function saveCouponRow(id) {
-        const row = document.querySelector(`tr[data-coupon="${id}"]`);
-        if (!row) return;
-        const get = (f) => {
-          const el = row.querySelector('[data-field="' + f + '"]');
-          if (!el) return null;
-          if (el.type === 'checkbox') return el.checked;
-          return el.value;
-        };
-        fetch(ADMIN + '/coupons/' + id, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ title: get('title'), description: get('description'), category: get('category'), amount: get('amount'), image_url: get('image_url'), cost_diamonds: get('cost_diamonds'), cost_xp: get('cost_xp'), is_active: get('is_active') })
-        }).then(r => r.json()).then(() => { document.getElementById('couponsMsg').textContent = ' Saved.'; document.getElementById('couponsMsg').className = 'msg ok'; setTimeout(() => document.getElementById('couponsMsg').textContent = '', 2000); });
-      }
-
-      function addCoupon() {
-        fetch(ADMIN + '/coupons', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-          body: JSON.stringify({ title: 'New Coupon', description: '', category: 'Rewards', amount: 0, image_url: '', cost_diamonds: 500, cost_xp: 0, is_active: true })
-        }).then(r => r.json()).then(() => loadRewards());
-      }
-
-      function deleteCoupon(id) {
-        if (!confirm('Delete this coupon?')) return;
-        fetch(ADMIN + '/coupons/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json()).then(() => loadRewards());
-      }
-
-      function resetLeaderboard() {
-        if (!confirm('DANGER: Reset all users XP to 0? This cannot be undone.')) return;
-        fetch(ADMIN + '/leaderboard/reset', { method: 'POST', headers: { Authorization: 'Bearer ' + token } })
-          .then(r => r.json()).then(() => {
-            document.getElementById('lbMsg').textContent = ' Leaderboard Reset.';
-            document.getElementById('lbMsg').className = 'msg ok';
-          });
-      }
-
-      function saveMaintenance() {
-        const val = document.getElementById('app.maintenance_mode').value;
-        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'app.maintenance_mode': val }) })
-          .then(r => r.json()).then(() => {
-            document.getElementById('maintMsg').textContent = ' Saved.';
-            document.getElementById('maintMsg').className = 'msg ok';
-            document.getElementById('prevMaintenance').style.background = val === '1' ? 'var(--danger-text)' : 'var(--success-text)';
-          });
-      }
-
-      function saveHomeOrder() {
-        const val = document.getElementById('home.layout_order').value;
-        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'home.layout_order': val }) })
-          .then(r => r.json()).then(() => {
-            document.getElementById('orderMsg').textContent = ' Saved!';
-            document.getElementById('orderMsg').className = 'msg ok';
-          });
-      }
-
-      function saveTaskConfigs() {
-        const val1 = document.getElementById('task.daily_limit').value;
-        const val2 = document.getElementById('task.reward_diamonds').value;
-        const val3 = document.getElementById('task.reward_coins').value;
-        const val4 = document.getElementById('task.reward_code').value;
-        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'task.daily_limit': val1, 'task.reward_diamonds': val2, 'task.reward_coins': val3, 'task.reward_code': val4 }) })
-          .then(r => r.json()).then(() => {
-            document.getElementById('taskConfMsg').textContent = ' Saved.';
-            document.getElementById('taskConfMsg').className = 'msg ok';
-          });
-      }
-
-      const tabSections = {
-        design: ['section-theme', 'section-brand'],
-        content: ['section-strings'],
-        cards: ['section-cards'],
-        users: ['section-users'],
-        rewards: ['section-rewards'],
-        leaderboard: ['section-leaderboard'],
-        settings: ['section-settings']
-      };
-
-      function switchTab(tab) {
-        document.querySelectorAll('.nav-item').forEach(btn => {
-          if (btn.dataset.tab === tab) btn.classList.add('active');
-          else btn.classList.remove('active');
         });
 
-        document.querySelectorAll('.section').forEach(sec => {
-          sec.style.display = 'none';
+      fetch(ADMIN + '/fraud-alerts', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(alerts => {
+          const tbody = document.getElementById('fraudTable');
+          if (tbody) tbody.innerHTML = alerts.length ? alerts.map(a => `
+            <tr style="background:var(--danger-bg);"><td>${a.email || a.phone || a.id}</td><td>${a.diamonds}</td><td>${a.ads_watched}</td><td>${a.scratch_used}</td></tr>
+          `).join('') : '<tr><td colspan="4">No suspicious activity today.</td></tr>';
         });
 
-        (tabSections[tab] || []).forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.style.display = 'block';
-        });
-      }
+      loadRewards();
+    }
 
-      document.addEventListener('DOMContentLoaded', () => {
-        switchTab('design');
+    function updateColorPreviews() {
+      ['primary', 'primaryDark', 'accent', 'background', 'surface', 'success'].forEach(name => {
+        const el = document.getElementById('theme.' + name);
+        const prev = document.getElementById('prev' + name.charAt(0).toUpperCase() + name.slice(1));
+        if (el && prev) prev.style.background = el.value;
       });
-    </script>
+    }
+    document.addEventListener('input', e => { if (e.target.id && e.target.id.startsWith('theme.')) updateColorPreviews(); });
+
+    function saveConfig() {
+      const payload = {};
+      ['theme.primary', 'theme.primaryDark', 'theme.accent', 'theme.background', 'theme.surface', 'theme.success'].forEach(k => {
+        const el = document.getElementById(k);
+        if (el) payload[k] = el.value;
+      });
+        fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
+        .then(function(r) { if (!r.ok) throw new Error('Save failed'); return r.json(); })
+        .then(function() { var m = document.getElementById('colorMsg'); m.textContent = ' Saved.'; m.className = 'msg ok'; })
+        .catch(function(e) { var m = document.getElementById('colorMsg'); m.textContent = ' Error: ' + (e.message || 'Save failed'); m.className = 'msg err'; });
+    }
+
+    function saveLogoUrl() {
+      const url = document.getElementById('logoUrl').value.trim();
+      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'logo.url': url }) })
+        .then(function(r) { if (!r.ok) throw new Error('Save failed'); return r.json(); })
+        .then(function() { var m = document.getElementById('logoMsg'); m.textContent = ' Saved.'; m.className = 'msg ok'; })
+        .catch(function(e) { var m = document.getElementById('logoMsg'); m.textContent = ' Error: ' + (e.message || 'Save failed'); m.className = 'msg err'; });
+    }
+
+    function uploadLogo(input) {
+      if (!input.files.length) return;
+      const fd = new FormData();
+      fd.append('logo', input.files[0]);
+      fetch(ADMIN + '/logo', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd })
+        .then(r => r.json())
+        .then(data => { document.getElementById('logoUrl').value = data.url || ''; document.getElementById('logoMsg').textContent = ' Uploaded. Save URL if needed.'; document.getElementById('logoMsg').className = 'msg ok'; })
+        .catch(() => { document.getElementById('logoMsg').textContent = ' Upload failed'; document.getElementById('logoMsg').className = 'msg err'; });
+    }
+
+    function saveScratchWatermark() {
+      var val = document.getElementById('scratchWatermarkInput').value.trim() || 'Scratch Rewards';
+      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'strings.scratch_card': val }) })
+        .then(function(r) { if (!r.ok) throw new Error('Save failed'); return r.json(); })
+        .then(function() { var m = document.getElementById('scratchMsg'); m.textContent = ' Saved. Watermark ab app me dikhega.'; m.className = 'msg ok'; })
+        .catch(function(e) { var m = document.getElementById('scratchMsg'); m.textContent = ' Error: ' + (e.message || 'Save failed'); m.className = 'msg err'; });
+    }
+
+    function saveStrings() {
+      const payload = {};
+      document.querySelectorAll('#stringsList input[id^="strings."]').forEach(el => { payload[el.id] = el.value; });
+      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(payload) })
+        .then(function(r) { if (!r.ok) throw new Error('Save failed'); return r.json(); })
+        .then(function() { var m = document.getElementById('stringsMsg'); m.textContent = ' Saved.'; m.className = 'msg ok'; })
+        .catch(function(e) { var m = document.getElementById('stringsMsg'); m.textContent = ' Error: ' + (e.message || 'Save failed'); m.className = 'msg err'; });
+    }
+
+    function saveCardRow(id) {
+      const row = document.querySelector('tr[data-id="' + id + '"]');
+      if (!row) return;
+      const get = (f) => { const el = row.querySelector('[data-field="' + f + '"]'); if (!el) return null; if (el.type === 'checkbox') return el.checked; return el.value; };
+      fetch(ADMIN + '/feature-cards/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ title: get('title'), description: get('description'), gradientId: parseInt(get('gradientId') || 1, 10), showAd: get('showAd'), linkType: get('linkType') || null }) })
+        .then(r => r.json()).then(() => { document.getElementById('cardsMsg').textContent = ' Card updated.'; document.getElementById('cardsMsg').className = 'msg ok'; });
+    }
+
+    function addCard() {
+      fetch(ADMIN + '/feature-cards', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ title: 'New Card', description: '', gradientId: 1, showAd: false, sortOrder: 99 }) })
+        .then(r => r.json()).then(() => loadAll());
+    }
+
+    function deleteCard(id) {
+      if (!confirm('Delete this card?')) return;
+      fetch(ADMIN + '/feature-cards/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } }).then(r => r.json()).then(() => loadAll());
+    }
+
+    function saveUser(id) {
+      const row = document.querySelector('tr[data-user="' + id + '"]');
+      if (!row) return;
+      const diamonds = row.querySelector('[data-field="diamonds"]').value;
+      const xp = row.querySelector('[data-field="xp"]').value;
+      const is_blocked = row.querySelector('[data-field="is_blocked"]').value === '1';
+      fetch(ADMIN + '/users/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ diamonds, xp, is_blocked }) })
+        .then(r => r.json()).then(() => { const msg = document.getElementById('usersMsg'); msg.textContent = 'User saved.'; msg.className = 'msg ok'; setTimeout(() => msg.textContent = '', 3000); });
+    }
+
+    function loadRewards() {
+      fetch(ADMIN + '/reward-requests', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(reqs => {
+          const tbody = document.getElementById('requestsTable');
+          if (tbody) tbody.innerHTML = reqs.length ? reqs.map(r => `
+            <tr>
+              <td>${new Date(r.requested_at).toLocaleString()}</td>
+              <td>${r.email || r.phone || r.user_id}</td>
+              <td>${r.title}</td>
+              <td><span class="pill" style="background:${r.status === 'APPROVED' ? 'var(--success-bg)' : (r.status === 'REJECTED' ? 'var(--danger-bg)' : '#fef3c7')};color:${r.status === 'APPROVED' ? 'var(--success-text)' : (r.status === 'REJECTED' ? 'var(--danger-text)' : '#92400e')}">${r.status}</span></td>
+              <td>${r.status === 'PENDING' ? '<button type="button" onclick="processRequest(' + r.id + ', \'APPROVED\')" style="padding:4px 10px;font-size:0.8rem;margin-right:6px;">Approve</button><button type="button" class="secondary danger" onclick="processRequest(' + r.id + ', \'REJECTED\')" style="padding:4px 10px;font-size:0.8rem;">Reject</button>' : '-'}</td>
+            </tr>
+          `).join('') : '<tr><td colspan="5">No pending requests.</td></tr>';
+        });
+
+      fetch(ADMIN + '/coupons', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(coupons => {
+          const tbody = document.getElementById('couponsTable');
+          if (tbody) tbody.innerHTML = coupons.map(c => `
+            <tr data-coupon="${c.id}">
+              <td><input type="text" data-field="title" value="${(c.title || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:100px;padding:6px;border:1px solid #e2e8f0;border-radius:6px;" /></td>
+              <td><input type="text" data-field="description" value="${(c.description || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:100px;padding:6px;border:1px solid #e2e8f0;border-radius:6px;" /></td>
+              <td><input type="text" data-field="category" value="${(c.category || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:80px;padding:6px;" /></td>
+              <td><input type="number" data-field="amount" value="${c.amount || 0}" onchange="saveCouponRow(${c.id})" style="width:60px;padding:6px;" /></td>
+              <td><input type="text" data-field="image_url" value="${(c.image_url || '').replace(/"/g, '&quot;')}" onchange="saveCouponRow(${c.id})" style="width:70px;padding:6px;" /></td>
+              <td><input type="number" data-field="cost_diamonds" value="${c.cost_diamonds}" onchange="saveCouponRow(${c.id})" style="width:60px;padding:6px;" /></td>
+              <td><input type="number" data-field="cost_xp" value="${c.cost_xp}" onchange="saveCouponRow(${c.id})" style="width:50px;padding:6px;" /></td>
+              <td><input type="checkbox" data-field="is_active" ${c.is_active ? 'checked' : ''} onchange="saveCouponRow(${c.id})" /></td>
+              <td><button type="button" onclick="deleteCoupon(${c.id})" class="secondary" style="padding:4px 10px;font-size:0.75rem;">Del</button></td>
+            </tr>
+          `).join('');
+        });
+    }
+
+    function processRequest(id, status) {
+      if (!confirm('Mark as ' + status + '?')) return;
+      fetch(ADMIN + '/reward-requests/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ status }) })
+        .then(r => r.json()).then(() => loadRewards());
+    }
+
+    function saveCouponRow(id) {
+      const row = document.querySelector('tr[data-coupon="' + id + '"]');
+      if (!row) return;
+      const get = (f) => { const el = row.querySelector('[data-field="' + f + '"]'); if (!el) return null; if (el.type === 'checkbox') return el.checked; return el.value; };
+      fetch(ADMIN + '/coupons/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ title: get('title'), description: get('description'), category: get('category'), amount: get('amount'), image_url: get('image_url'), cost_diamonds: get('cost_diamonds'), cost_xp: get('cost_xp'), is_active: get('is_active') }) })
+        .then(r => r.json()).then(() => { document.getElementById('couponsMsg').textContent = ' Saved.'; document.getElementById('couponsMsg').className = 'msg ok'; setTimeout(() => document.getElementById('couponsMsg').textContent = '', 2000); });
+    }
+
+    function addCoupon() {
+      fetch(ADMIN + '/coupons', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ title: 'New Coupon', description: '', category: 'Rewards', amount: 0, image_url: '', cost_diamonds: 500, cost_xp: 0, is_active: true }) })
+        .then(r => r.json()).then(() => loadRewards());
+    }
+
+    function deleteCoupon(id) {
+      if (!confirm('Delete this coupon?')) return;
+      fetch(ADMIN + '/coupons/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } }).then(r => r.json()).then(() => loadRewards());
+    }
+
+    function resetLeaderboard() {
+      if (!confirm('Reset all users’ XP to 0? This cannot be undone.')) return;
+      fetch(ADMIN + '/leaderboard/reset', { method: 'POST', headers: { Authorization: 'Bearer ' + token } })
+        .then(r => r.json()).then(() => { document.getElementById('lbMsg').textContent = ' Leaderboard reset.'; document.getElementById('lbMsg').className = 'msg ok'; });
+    }
+
+    function saveMaintenance() {
+      const val = document.getElementById('app.maintenance_mode').value;
+      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'app.maintenance_mode': val }) })
+        .then(r => r.json()).then(() => { document.getElementById('maintMsg').textContent = ' Saved.'; document.getElementById('maintMsg').className = 'msg ok'; });
+    }
+
+    function saveHomeOrder() {
+      const val = document.getElementById('home.layout_order').value;
+      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'home.layout_order': val }) })
+        .then(r => r.json()).then(() => { document.getElementById('orderMsg').textContent = ' Saved.'; document.getElementById('orderMsg').className = 'msg ok'; });
+    }
+
+    function saveTaskConfigs() {
+      const val1 = document.getElementById('task.daily_limit').value;
+      const val2 = document.getElementById('task.reward_diamonds').value;
+      const val3 = document.getElementById('task.reward_coins').value;
+      const val4 = document.getElementById('task.reward_code').value;
+      fetch(ADMIN + '/config', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify({ 'task.daily_limit': val1, 'task.reward_diamonds': val2, 'task.reward_coins': val3, 'task.reward_code': val4 }) })
+        .then(r => r.json()).then(() => { document.getElementById('taskConfMsg').textContent = ' Saved.'; document.getElementById('taskConfMsg').className = 'msg ok'; });
+    }
+  </script>
 </body>
 
 </html>

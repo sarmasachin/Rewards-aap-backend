@@ -103,6 +103,7 @@ const defaults = {
   'strings.profile': 'Profile',
   'strings.leaderboard': 'Leaderboard',
   'strings.store': 'Store',
+  'strings.scratch_card': 'Scratch Rewards',
   'admin.password': 'admin123',
   'task.daily_limit': '4',
   'task.reward_diamonds': '10',
@@ -172,6 +173,10 @@ try {
 
 try {
   db.exec('ALTER TABLE users ADD COLUMN profile_image TEXT');
+} catch (e) { /* Ignore */ }
+
+try {
+  db.exec('ALTER TABLE user_daily ADD COLUMN wheel_used INTEGER DEFAULT 0');
 } catch (e) { /* Ignore */ }
 
 module.exports = db;
